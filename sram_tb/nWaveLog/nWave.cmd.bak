@@ -1,0 +1,13 @@
+wvSetPosition -win $_nWave1 {("G1" 0)}
+wvOpenFile -win $_nWave1 \
+           {/home/ldap-users/jyli/Documents/VSD_2017fall/workspace/sram_tb/tag_tb.fsdb}
+wvGetSignalOpen -win $_nWave1
+wvGetSignalSetScope -win $_nWave1 "/tag_tb"
+wvGetSignalSetScope -win $_nWave1 "/tag_tb/r1"
+wvGetSignalSetScope -win $_nWave1 "/tag_tb"
+wvGetSignalSetScope -win $_nWave1 "/tag_tb/r1"
+wvGetSignalSetScope -win $_nWave1 "/tag_tb"
+wvGetSignalExpandCollapseAll -win $_nWave1
+wvGetSignalSetScope -win $_nWave1 "/tag_tb/r1"
+wvGetSignalSetScope -win $_nWave1 "/tag_tb/r1"
+wvGetSignalSetScope -win $_nWave1 "/tag_tb"
