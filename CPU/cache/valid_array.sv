@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2017-12-17
 //
-//* Last Modified : Sun 17 Dec 2017 10:57:11 AM CST
+//* Last Modified : Sun 17 Dec 2017 02:30:44 PM CST
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -15,7 +15,7 @@
 //
 
 module  valid_array #(
-  parameter INDEXWIDTH = 6
+  parameter INDEXWIDTH = 6,
   parameter VALIDARRAYSIZE = 64
 )(
   output logic valid_data,
@@ -23,6 +23,7 @@ module  valid_array #(
   input cs_valid,
   input oe_valid,
   input [INDEXWIDTH - 1 : 0] addr_index,
+  input clk,
   input rst
 );
   logic [VALIDARRAYSIZE - 1 : 0] vdata;
@@ -39,7 +40,7 @@ module  valid_array #(
     end
     else begin
       if (cs_valid == 1'b1) begin
-        vdata[addr_index] = web_valid;
+        vdata[addr_index] = ~web_valid;
       end
     end
   end : write

@@ -2,6 +2,4 @@
 // File created by:  ncverilog
 // Do not modify this file
 //
-CPU/cache_L1.sv
-+sv
-+notimingcheck
+-sv

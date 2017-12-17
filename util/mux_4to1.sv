@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2017-12-16
 //
-//* Last Modified : Sat 16 Dec 2017 10:48:06 PM CST
+//* Last Modified : Sun 17 Dec 2017 05:19:23 PM CST
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -18,7 +18,7 @@ module mux_4to1 #(
   parameter DATAWIDTH = 32
 ) (
   output logic[DATAWIDTH - 1 : 0] out,
-  input [3:0] sel,
+  input [1:0] sel,
   input [DATAWIDTH - 1 : 0] src0,
   input [DATAWIDTH - 1 : 0] src1,
   input [DATAWIDTH - 1 : 0] src2,

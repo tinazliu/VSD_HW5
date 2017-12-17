@@ -2,7 +2,10 @@
 // File created by:  ncverilog
 // Do not modify this file
 //
++sv
++notimingcheck
 -noshowtop
+-NOTIMINGCHECKS
 -MESSAGES
 -XLMODE
 ./INCA_libs/irun.lnx86.14.10.nc

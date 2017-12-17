@@ -5,7 +5,8 @@
 -XLMODE
 ./INCA_libs/irun.lnx86.14.10.nc
 -RUNMODE
-CPU/cache/fourword_dataunit.sv
+CPU/cache_L1.sv
+-sv
 -CDSLIB
 ./INCA_libs/irun.lnx86.14.10.nc/cdsrun.lib
 -HDLVAR

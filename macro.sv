@@ -7,7 +7,7 @@
 
 * Creation Date : 2017-09-28
 
-* Last Modified : Fri 24 Nov 2017 03:34:32 PM CST
+* Last Modified : Sun 17 Dec 2017 04:45:12 PM CST
 
 * Created By :  Ji-Ying, Li
 
@@ -100,4 +100,16 @@
 // src of  pc + imm/rs1
 `define PCADDIMM 1'b0
 `define PCADDRS1 1'b1
+
+// cache
+`define PWRITE 1'b1
+`define PREAD  1'b0
+
+`define READHIT  1'b1
+`define READMISS 1'b0
+
+`define TAGFIELD   31:10
+`define INDEXFIELD 9:4
+`define BLOCKOFFSETFIELD 3:2
+
 `endif
