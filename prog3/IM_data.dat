@@ -3,14 +3,14 @@
 00000637 //         lui x12,     0x0     #initial sum(x12)
 00000093 //         addi x1, x0, 0x0
 00000693 //         addi x13, x0, 0x0
-30100113 //         addi x2, x0, 0x301   #//x2 = 769
+30100113  //         addi x2, x0, 0x769  #//x2 = 767
 00300c13 //         addi x24, x0, 0x3   #//x24 = 4 (0~3)
 0ff00c93 //		 addi x25, x0, 0xff   # for and
 64000213 //         addi x4, x0, 0x640   #//x4 = 800 DM[800]-> Data2 8
 64020213 //         addi x4, x4, 0x640   #//x4 = 800 DM[800]-> Data2 8
 00800193 //         addi x3, x0, 0x8     #//x3 = 2 DM[2]-> Data1
 008182b3 //         add  x5, x3, x8      #// x5 = x3 + x8 -> Data1-addr 
-00820333 //         add  x6, x4, x8      #// x6 = x4 + x8 -> Data2-addr
+00820333 //   loop_tmp:  add  x6, x4, x8      #// x6 = x4 + x8 -> Data2-addr
 0002ad03 //   loop: lw   x26, 0  (x5)    #// x10 = Data1
 00032d83 //		 lw   x27, 0  (x6)    #// x11 = Data2
 019d7533 //   diff4:and  x10,x26, x25    # catch 8 bits
@@ -28,7 +28,7 @@ fd869ce3 //		 bne  x13, x24, diff4 # will redo 4
 00428293 //		 addi x5, x5, 0x4     #//shift to next data1Addr 
 00430313 //		 addi x6, x6, 0x4     #//shift to next data2Addr 
 00108093 //		 addi x1, x1, 0x1     #//count to next
-fc1110e3 //		 bne  x2, x1, loop    #// will redo 788 
+fa111ee3 //		 bne  x2, x1, loop    #// will redo 788 
 00c42023 //		 sw   x12, 0  (x8)  
 20040fb7 //   finish:	lui	x31, 0x20040
 ffcf8f93 //         addi x31, x31, -4
