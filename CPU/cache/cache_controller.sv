@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2017-12-17
 //
-//* Last Modified : Sun 17 Dec 2017 05:25:04 PM CST
+//* Last Modified : Tue 19 Dec 2017 02:56:58 PM CST
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -23,7 +23,8 @@ module  cache_controller #(
   parameter SELOUTPUTWIDTH = 2,
   parameter SELINPUTWIDTH = 4,
   parameter BLOCKOFFSETWIDTH = 2,
-  parameter STATESWIDTH = 2,
+  parameter INDEXWIDTH = 6,
+  parameter STATESWIDTH = 3,
   parameter DELAY = 3
 )(
   output logic Pready,
@@ -49,11 +50,17 @@ module  cache_controller #(
   input [ARRAYWEBWIDTH - 1 : 0] store_type,
   input isHit,
   input SYSready,
+  input [INDEXWIDTH - 1 : 0] addr_index,
   input [BLOCKOFFSETWIDTH - 1 : 0] block_offset,
+  input stall,
   input clk,
   input rst
 );
-  typedef enum logic [STATESWIDTH - 1 : 0] {IDLE, READMEM, WRITEMEM} State;
+  logic [INDEXWIDTH - 1 : 0] last_index;
+  always_ff @(posedge clk) begin : hold_last_index
+    last_index <= addr_index;
+  end : hold_last_index
+  typedef enum logic [STATESWIDTH - 1 : 0] {IDLE, READMEM, WRITEMEMTEMP,WRITEMEM, DONE} State;
   State cs, ns;
   logic [DELAY - 1 : 0] ready3t;
   logic rst_readycounter;
@@ -63,7 +70,7 @@ module  cache_controller #(
     .d(1'b1),
     .ready(SYSready),
     .clk(clk),
-    .rst(rst)
+    .rst(rst_readycounter)
   );
 
   always_ff @(posedge clk or rst) begin : state_transfer
@@ -74,7 +81,7 @@ module  cache_controller #(
   always_comb begin : next_state
     case (cs)
       IDLE: begin
-        if (Pstrobe == 1'b0) begin
+        if (Pstrobe == 1'b0 | rst) begin
           ns = IDLE;
         end 
         else begin
@@ -87,37 +94,23 @@ module  cache_controller #(
           end
         end
       end
-      READMEM:  if(SYSready && ready3t[2] == 1'b1) ns = IDLE;
+      READMEM:  if(SYSready && ready3t[2] == 1'b1 && stall == 1'b0) ns = IDLE;
+                else if(SYSready && ready3t[2] == 1'b1 && stall == 1'b1) ns = DONE;
                 else ns = READMEM;
-      WRITEMEM: if(SYSready) ns = IDLE;
+      WRITEMEM: if(SYSready && stall == 1'b0) ns = IDLE;
+                else if (SYSready && stall == 1'b1) ns = DONE;
                 else ns = WRITEMEM;
+      DONE:     if(stall == 1'b1) ns = DONE;
+                else ns = IDLE;
       default: ns = IDLE;
     endcase
   end : next_state
   
   always_comb begin : hit_decision
-    oe_tag   = Pstrobe & (Prw == `PREAD);
-    oe_valid = Pstrobe & (Prw == `PREAD);
-    oe_data  = Pstrobe ;
-    sel_dataunit_out = (block_offset);/*  == 2'b0)? 4'b0001: */
-                       // (block_offset == 2'b1)? 4'b0010:
-                       // (block_offset == 2'd2)? 4'b0100:
-                       /* (block_offset == 2'd3)? 4'b1000: 4'b0000; */
-    web_data         = store_type;
-    sel_dataunit_in  = (ready3t[2])? {SYSready, 3'b0}:
-                       (ready3t[1])? {1'b0, SYSready, 2'b0}:
-                       (ready3t[0])? {2'b0, SYSready, 1'b0}: {3'b0, SYSready};
+    oe_tag   = Pstrobe ;
+    oe_valid = Pstrobe ;
+    sel_dataunit_out = (block_offset);
   end : hit_decision
-
-  task OutputVecBasedOnState;
-    input [3:0] vector;
-    begin
-      {
-        web_data
-      } = vector;
-    end
-  endtask
-  //b_data, oe_data, sel_dataunit_in, sel_dataunit_out,
 
   always_comb begin : FSM_comb
     case (cs)
@@ -133,12 +126,18 @@ module  cache_controller #(
         web_valid        = 1'b1;
         cs_valid         = 1'b0;
 
-        SYSstrobe        = Pstrobe&(isHit == `READMISS);
+        SYSstrobe        = (Pstrobe & (Prw == `PWRITE)) | (Pstrobe&(isHit == `READMISS));
         SYSrw            = 1'b0; //0 for read
 
-        cs_data          = Pstrobe & (Prw == `PWRITE);
-        Pready           = (isHit == `READHIT);  
-      end
+        cs_data          = 1'b1;
+        oe_data          = 1'b1;
+        web_data         = 4'b1111;
+        Pready           = ((isHit == `READHIT) && (Prw == `PREAD) &&(last_index == addr_index));  
+        sel_dataunit_in  = (~Pstrobe|(Prw == `PREAD))? 4'b0000:
+                           (block_offset == 2'b0)?     4'b0001:
+                           (block_offset == 2'b1)?     4'b0010:
+                           (block_offset == 2'd2)?     4'b0100:4'b1000;
+      end 
       READMEM: begin
         rst_readycounter = 1'b0;
 
@@ -151,11 +150,16 @@ module  cache_controller #(
         web_valid        = 1'b0;
         cs_valid         = 1'b1;
 
-        SYSstrobe        = 1'b0;
+        SYSstrobe        = 1'b1;
         SYSrw            = 1'b0; //0 for read
 
-        cs_data          = SYSready;
+        cs_data          = 1'b1;
+        oe_data          = 1'b1;
+        web_data         = store_type;
         Pready           = 1'b0;  
+        sel_dataunit_in  = (ready3t[2])? {SYSready, 3'b0}:
+                           (ready3t[1])? {1'b0, SYSready, 2'b0}:
+                           (ready3t[0])? {2'b0, SYSready, 1'b0}: {3'b0, SYSready};
       end
       WRITEMEM: begin
         rst_readycounter = 1'b1;
@@ -164,16 +168,43 @@ module  cache_controller #(
         sysdataOE        = 1'b1;
         pdataOE          = 1'b0;
 
-        web_tag          = 1'b0;
-        cs_tag           = 1'b1;
-        web_valid        = 1'b0;
-        cs_valid         = 1'b1;
+        web_tag          = 1'b1;
+        cs_tag           = 1'b0;
+        web_valid        = 1'b1;
+        cs_valid         = 1'b0;
 
         SYSstrobe        = 1'b1;
         SYSrw            = 1'b1; //1 for write
 
         cs_data          = 1'b1;
+        oe_data          = 1'b1;
+        web_data         = store_type;
         Pready           = 1'b0;  
+        sel_dataunit_in = (block_offset == 2'b0)? 4'b0001:
+                          (block_offset == 2'b1)? 4'b0010:
+                          (block_offset == 2'd2)? 4'b0100: 4'b1000;
+      end
+      DONE: begin
+        rst_readycounter = 1'b1;
+
+        sel_dataarray_in = 1'b1; //1 for Pdata_in //dont care
+        sysdataOE        = 1'b0;
+        pdataOE          = 1'b1;
+
+        web_tag          = 1'b1;
+        cs_tag           = 1'b0;
+        web_valid        = 1'b1;
+        cs_valid         = 1'b0;
+
+        SYSstrobe        = 1'b0;
+        SYSrw            = 1'b0; //1 for write
+
+        cs_data          = 1'b1;
+        oe_data          = 1'b1;
+        web_data         = store_type;
+        Pready           = 1'b1;  
+        sel_dataunit_in = 4'b0000;
+        
       end
       default: begin
         rst_readycounter = 1'b1;
@@ -190,8 +221,10 @@ module  cache_controller #(
         SYSstrobe        = Pstrobe&(isHit == `READMISS);
         SYSrw            = 1'b0; //0 for read
 
-        cs_data          = 1'b0;
+        cs_data          = 1'b1;
+        web_data         = store_type;
         Pready           = isHit == `READHIT;  
+        sel_dataunit_in = 4'b0000;
       end
     endcase
   end : FSM_comb

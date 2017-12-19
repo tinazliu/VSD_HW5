@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2017-11-23
 //
-//* Last Modified : Fri 24 Nov 2017 10:15:21 PM CST
+//* Last Modified : Tue 19 Dec 2017 02:44:46 PM CST
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -19,23 +19,25 @@ module data_hazard_unit #(
   parameter REGADDRWIDTH = 5
 )(
   output logic hazard_nop_sel,
+  input DM_en_EX,
   input DM_write_EX,
   input DM_write_MEM,
   input rf_write_EX, //precceding write rf inst// branch hazard
   input branch_hazard,
+  input jump_hazard,
   input [REGADDRWIDTH - 1 : 0] rd_addr_EX,
   input [REGADDRWIDTH - 1 : 0] rd_addr_MEM,
   input [REGADDRWIDTH - 1 : 0] rs1_addr,
   input [REGADDRWIDTH - 1 : 0] rs2_addr
 );
   always_comb begin : dhu
-    if(((DM_write_EX == 1'b0) && (rd_addr_EX != {(REGADDRWIDTH){1'b0}})&&((rs1_addr == rd_addr_EX)||(rs2_addr == rd_addr_EX)))) begin
+    if(((DM_write_EX == 1'b0 && DM_en_EX ==1'b1) && (rd_addr_EX != {(REGADDRWIDTH){1'b0}})&&((rs1_addr == rd_addr_EX)||(rs2_addr == rd_addr_EX)))) begin
       hazard_nop_sel    = `HAZARDSELEMP;
     end // lw + rs access inst
-    else if((branch_hazard == 1'b1) && (DM_write_MEM == 1'b0) && (rd_addr_MEM != {(REGADDRWIDTH){1'b0}})&&((rs1_addr == rd_addr_MEM)||(rs2_addr == rd_addr_MEM))) begin
+    else if((branch_hazard == 1'b1|| (jump_hazard == 1'b1)) && (DM_write_MEM == 1'b0) && (rd_addr_MEM != {(REGADDRWIDTH){1'b0}})&&((rs1_addr == rd_addr_MEM)||(rs2_addr == rd_addr_MEM))) begin
       hazard_nop_sel    = `HAZARDSELEMP;
     end // lw + ??? + branch
-    else if((branch_hazard == 1'b1) && (rf_write_EX == 1'b1) && (rd_addr_EX != {(REGADDRWIDTH){1'b0}})&&((rs1_addr == rd_addr_EX)||(rs2_addr == rd_addr_EX))) begin
+    else if((branch_hazard == 1'b1 || (jump_hazard == 1'b1) ) && (rf_write_EX == 1'b1) && (rd_addr_EX != {(REGADDRWIDTH){1'b0}})&&((rs1_addr == rd_addr_EX)||(rs2_addr == rd_addr_EX))) begin
       hazard_nop_sel    = `HAZARDSELEMP;
     end // ??? + branch
     else begin

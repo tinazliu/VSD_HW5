@@ -7,15 +7,15 @@
 //
 //* Creation Date : 2017-12-16
 //
-//* Last Modified : Sun 17 Dec 2017 05:18:27 PM CST
+//* Last Modified : Tue 19 Dec 2017 02:53:32 PM CST
 //
 //* Created By :  Ji-Ying, Li
 //
 //_._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._
 //
 
-`include "data_array.v"
-`include "tag_array.v"
+// `include "data_array.v"
+// `include "tag_array.v"
 `include "macro.sv"
 `include "util/mux_4to1.sv"
 `include "util/mux_2to1.sv"
@@ -23,7 +23,7 @@
 `include "CPU/cache/hit_decision_unit.sv"
 `include "CPU/cache/addr_modifier.sv"
 `include "CPU/cache/cache_controller.sv"
-`include "CPU/cache/ready_counter.sv"
+`include "util/ready_counter.sv"
 `include "CPU/cache/fourword_dataunit.sv"
 
 module cache_L1 #(
@@ -52,6 +52,7 @@ module cache_L1 #(
   input SYSready,
   input [DATAWIDTH - 1 : 0] SYSdata_in,
 
+  input stall,
   input clk,
   input rst
 );
@@ -127,7 +128,9 @@ module cache_L1 #(
     .store_type(store_type),
     .isHit(isHit),
     .SYSready(SYSready),
+    .addr_index(addr_index),
     .block_offset(addr_blockoffset),
+    .stall(stall),
     .clk(clk),
     .rst
   );

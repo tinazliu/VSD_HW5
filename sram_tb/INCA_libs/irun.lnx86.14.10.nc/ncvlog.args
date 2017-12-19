@@ -6,6 +6,7 @@
 ./INCA_libs/irun.lnx86.14.10.nc
 -RUNMODE
 tag_tb.sv
+-sv
 -CDSLIB
 ./INCA_libs/irun.lnx86.14.10.nc/cdsrun.lib
 -HDLVAR

@@ -1,7 +1,10 @@
 1513435470 /home/ldap-users/jyli/Documents/VSD_2017fall/workspace/util/mux_2to1.sv
 1513502363 /home/ldap-users/jyli/Documents/VSD_2017fall/workspace/util/mux_4to1.sv
-1513502866 /home/ldap-users/jyli/Documents/VSD_2017fall/workspace/CPU/cache/fourword_dataunit.sv
-1513492244 /home/ldap-users/jyli/Documents/VSD_2017fall/workspace/CPU/cache/valid_array.sv
-1513486929 /home/ldap-users/jyli/Documents/VSD_2017fall/workspace/CPU/cache/ready_counter.sv
-1513502704 /home/ldap-users/jyli/Documents/VSD_2017fall/workspace/CPU/cache/cache_controller.sv
-1513502307 /home/ldap-users/jyli/Documents/VSD_2017fall/workspace/CPU/cache_L1.sv
+1513649673 /home/ldap-users/jyli/Documents/VSD_2017fall/workspace/CPU/cache/fourword_dataunit.sv
+1513616885 /home/ldap-users/jyli/Documents/VSD_2017fall/workspace/CPU/cache/valid_array.sv
+1513666430 /home/ldap-users/jyli/Documents/VSD_2017fall/workspace/CPU/cache/cache_controller.sv
+1513666412 /home/ldap-users/jyli/Documents/VSD_2017fall/workspace/CPU/cache_L1.sv
+1513666390 /home/ldap-users/jyli/Documents/VSD_2017fall/workspace/top.sv
+1513511619 /home/ldap-users/jyli/Documents/VSD_2017fall/workspace/wrapper/CPUfetch_wrapper.sv
+1513665914 /home/ldap-users/jyli/Documents/VSD_2017fall/workspace/top_tb.sv
+1513637224 /home/ldap-users/jyli/Documents/VSD_2017fall/workspace/da_tb.sv

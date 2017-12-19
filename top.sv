@@ -7,16 +7,18 @@
 //
 //* Creation Date : 2017-11-05
 //
-//* Last Modified : Wed Nov  8 13:39:35 2017
+//* Last Modified : Tue 19 Dec 2017 02:53:10 PM CST
 //
 //* Created By :  Ji-Ying, Li
 //
 //_._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._
 //
 
+`timescale 1ns/10ps
 `include "AHB_def.svh"
 `include "macro.sv"
 
+// `include "CPU.sv"
 //  CPU submodules are included in CPU.sv which is included in top_tb.sv
 // `include "CPU/pc.sv"
 // `include "CPU/decoder.sv"
@@ -40,6 +42,9 @@
 `include "wrapper/CPUfetch_wrapper.sv"
 `include "wrapper/Masterready.sv"
 
+`include "CPU/cache_L1.sv"
+
+`timescale 1ns/10ps
 module top(
   input clk,
   input rst,
@@ -55,16 +60,17 @@ module top(
 
 // CPU logic declaration
 
-  wire [31:0] IM_out_w;
-  wire [31:0] DM_out_w;
-  wire IM_enable_w;
-  wire [31:0] IM_address_w;
-  wire DM_write_w;
-  wire DM_enable_w;
-  wire [31:0] DM_in_w;
-  wire [31:0] DM_address_w;
+  wire [31:0] IM_out_w1, IM_out_w2;
+  wire [31:0] DM_out_w1, DM_out_w2;
+  wire IM_enable_w1, IM_enable_w2;
+  wire DM_enable_w1, DM_enable_w2;
+  wire [31:0] IM_address_w1, IM_address_w2;
+  wire DM_write_w1, DM_write_w2;
+  wire [31:0] DM_in_w1, DM_in_w2;
+  wire [31:0] DM_address_w1, DM_address_w2;
+  wire [3:0] store_type;
 
-  wire M1_ready, M2_ready;
+  wire M1_ready_w1, M1_ready_w2, M2_ready_w1, M2_ready_w2;
   wire stall;
   
 
@@ -116,14 +122,15 @@ module top(
   logic [`AHB_BURST_BITS - 1 : 0] HBURST;
 
   CPU CPU1 (
-    .IM_enable(IM_enable_w),
-    .IM_address(IM_address_w),
-    .DM_write(DM_write_w),
-    .DM_enable(DM_enable_w),
-    .DM_in(DM_in_w),
-    .DM_address(DM_address_w),
-    .IM_out(IM_out_w),
-    .DM_out(DM_out_w),
+    .IM_enable(IM_enable_w1),
+    .IM_address(IM_address_w1),
+    .DM_write(DM_write_w1),
+    .DM_enable(DM_enable_w1),
+    .store_type(store_type),
+    .DM_in(DM_in_w1),
+    .DM_address(DM_address_w1),
+    .IM_out(IM_out_w1),
+    .DM_out(DM_out_w1),
     .stall(stall),
     .clk(clk),
     .rst(rst)
@@ -177,12 +184,30 @@ module top(
   Masterready mr1(
     .stall(stall),
     .rst(rst),
-    .IM_enable(IM_enable_w),
-    .DM_enable(DM_enable_w),
-    .M1_ready (M1_ready),
-    .M2_ready (M2_ready)
+    .IM_enable(IM_enable_w1),
+    .DM_enable(DM_enable_w1),
+    .M1_ready (M1_ready_w1),
+    .M2_ready (M2_ready_w1)
   );
 
+  cache_L1 icache(
+    .Pready(M1_ready_w1),
+    .Pdata_out(IM_out_w1),
+    .Pstrobe(IM_enable_w1),
+    .Prw(1'b0),
+    .store_type(4'b0),
+    .Paddr(IM_address_w1),
+    .Pdata_in(32'b0),
+    .SYSstrobe(IM_enable_w2),
+    .SYSrw(),
+    .SYSaddr(IM_address_w2),
+    .SYSdata_out(),
+    .SYSready(M1_ready_w2),
+    .SYSdata_in(IM_out_w2),
+    .stall(stall),
+    .clk(clk),
+    .rst(rst)
+  );
   CPUfetch_wrapper CPUFW1 (
     //for AHB
     .HBUSREQ(HBUSREQ_M1),
@@ -202,13 +227,31 @@ module top(
     .HRDATA(HRDATA),
 
     //for CPU
-    .IM_out(IM_out_w),
-    .ready(M1_ready),
-    .IM_enable(IM_enable_w),
-    .IM_address(IM_address_w),
+    .IM_out(IM_out_w2),
+    .ready(M1_ready_w2),
+    .IM_enable(IM_enable_w2),
+    .IM_address(IM_address_w2),
     .stall(stall)
   );
 
+  cache_L1 dcache(
+    .Pready(M2_ready_w1),
+    .Pdata_out(DM_out_w1),
+    .Pstrobe(DM_enable_w1),
+    .Prw(DM_write_w1),
+    .store_type(store_type),
+    .Paddr(DM_address_w1),
+    .Pdata_in(DM_in_w1),
+    .SYSstrobe(DM_enable_w2),
+    .SYSrw(DM_write_w2),
+    .SYSaddr(DM_address_w2),
+    .SYSdata_out(DM_in_w2),
+    .SYSready(M2_ready_w2),
+    .SYSdata_in(DM_out_w2),
+    .stall(stall),
+    .clk(clk),
+    .rst(rst)
+  );
 
   CPUmem_wrapper CPUMW1 (
     //for AHB
@@ -229,12 +272,12 @@ module top(
     .HRDATA(HRDATA),
   
     //for CPU
-    .DM_out(DM_out_w),
-    .ready(M2_ready),
-    .DM_in(DM_in_w),
-    .DM_enable(DM_enable_w),
-    .DM_write(DM_write_w),
-    .DM_address(DM_address_w),
+    .DM_out(DM_out_w2),
+    .ready(M2_ready_w2),
+    .DM_in(DM_in_w2),
+    .DM_enable(DM_enable_w2),
+    .DM_write(DM_write_w2),
+    .DM_address(DM_address_w2),
     .stall(stall)
   );
 

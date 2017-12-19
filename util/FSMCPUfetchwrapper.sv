@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2017-11-22
 //
-//* Last Modified : Wed 22 Nov 2017 06:47:04 PM CST
+//* Last Modified : Mon 18 Dec 2017 03:42:21 PM CST
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -15,10 +15,13 @@
 //
 
 `include "AHB_def.svh"
+`include "util/ready_counter.sv"
 
-module FSMCPUfetchwrapper (
+module FSMCPUfetchwrapper #(
+  parameter DELAY = 3
+)(
   output logic HBUSREQ,
-  // output logic HLOCK,
+  output logic HLOCK,
   // output logic [`AHB_TRANS_BITS - 1 : 0] HTRANS,
   output logic [`AHB_ADDR_BITS - 1 : 0] HADDR,
   output logic HWRITE,
@@ -43,8 +46,21 @@ module FSMCPUfetchwrapper (
 );
 
   logic [`AHB_DATA_BITS - 1 : 0] buf_IM_out;
-  typedef enum logic [2 - 1 : 0]  {IDLE, ADDRPHASE, DATAPHASE, DONE} State;
+  typedef enum logic [3 - 1 : 0]  {IDLE, ADDRPHASE, ADDRDATAPHASE, DATAPHASE, DONE} State;
   State cs, ns;
+
+  logic [`AHB_DATA_BITS - 1 : 0] next_IM_address;
+
+
+  logic [DELAY - 1 : 0] ready3t;
+  logic rst_ready;
+  ready_counter rc0(
+    .dly(ready3t),
+    .d(1'b1),
+    .ready(HREADY),
+    .clk(HCLK),
+    .rst(rst_ready)
+  );
 
   always_ff @(posedge HCLK or HRESETn) begin : next_state
     if (~HRESETn) begin
@@ -58,55 +74,76 @@ module FSMCPUfetchwrapper (
 
   always_comb 
     case (cs)
-      IDLE:      if(HGRANT == 1'b1)                       ns = ADDRPHASE;
-                 else                                     ns = IDLE;
+      IDLE:          if(HGRANT == 1'b1)                       ns = ADDRPHASE;
+                     else                                     ns = IDLE;
 
-      ADDRPHASE: if(HREADY == 1'b1)                       ns = DATAPHASE;
-                 else                                     ns = ADDRPHASE;
-                 
-      DATAPHASE: if(HREADY == 1'b1 && stall == 1'b1)      ns = DONE;
-                 else if(HREADY == 1'b1 && stall == 1'b0) ns = IDLE;
-                 else                                     ns = DATAPHASE;
+      ADDRPHASE:     if(HREADY == 1'b1)                       ns = ADDRDATAPHASE;
+                     else                                     ns = ADDRPHASE;
+                     
+      ADDRDATAPHASE: if(HREADY == 1'b1 && ready3t[2] == 1'b1) ns = DATAPHASE;
+                     else                                     ns = ADDRDATAPHASE;
+                     
+      DATAPHASE:     if(HREADY == 1'b1 && stall == 1'b1)      ns = DONE;
+                     else if(HREADY == 1'b1 && stall == 1'b0) ns = IDLE;
+                     else                                     ns = DATAPHASE;
 
-      DONE:      if(stall == 1'b0)                        ns = IDLE;
-                 else                                     ns = DONE;
+      DONE:          if(stall == 1'b0)                        ns = IDLE;
+                     else                                     ns = DONE;
 
-      default:                                            ns = IDLE;
+      default:                                                ns = IDLE;
     endcase
     
   always_comb begin : comb
     case (cs)
       IDLE: begin
-        HBUSREQ = IM_enable;
-        HADDR   = `AHB_ADDR_BITS'b0;
-        HWRITE  = 1'b0;
-        HWDATA  = `AHB_DATA_BITS'b0;
-        ready   = ~IM_enable;//1'b1;
-        IM_out  = `AHB_DATA_BITS'b0;
+        HBUSREQ   = IM_enable;
+        HLOCK     = IM_enable;
+        HADDR     = `AHB_ADDR_BITS'b0;
+        HWRITE    = 1'b0;
+        HWDATA    = `AHB_DATA_BITS'b0;
+        ready     = ~IM_enable;//1'b1;
+        IM_out    = `AHB_DATA_BITS'b0;
+        rst_ready = 1'b1;
       end
       ADDRPHASE: begin
-        HBUSREQ = 1'b0;
-        HADDR   = IM_address;
-        HWRITE  = 1'b0;
-        HWDATA  = `AHB_DATA_BITS'b0;
-        ready   = 1'b0;
-        IM_out  = `AHB_DATA_BITS'b0;
+        HBUSREQ   = 1'b0;
+        HLOCK     = 1'b1;
+        HADDR     = next_IM_address;
+        HWRITE    = 1'b0;
+        HWDATA    = `AHB_DATA_BITS'b0;
+        ready     = 1'b0;
+        IM_out    = `AHB_DATA_BITS'b0;
+        rst_ready = 1'b0;
+      end
+      ADDRDATAPHASE: begin
+        HBUSREQ   = 1'b0;
+        HLOCK     = ~ready3t[2];
+        HADDR     = next_IM_address;
+        HWRITE    = 1'b0;
+        HWDATA    = `AHB_DATA_BITS'b0;
+        ready     = HREADY;
+        IM_out    = HRDATA;
+        rst_ready = 1'b0;
       end
       DATAPHASE: begin
-        HBUSREQ = 1'b0;
-        HADDR   = `AHB_ADDR_BITS'b0;
-        HWRITE  = 1'b0;
-        HWDATA  = `AHB_DATA_BITS'b0;
-        ready   = HREADY;
-        IM_out  = HRDATA;
+        HBUSREQ   = 1'b0;
+        HLOCK     = 1'b0;
+        HADDR     = `AHB_ADDR_BITS'b0;
+        HWRITE    = 1'b0;
+        HWDATA    = `AHB_DATA_BITS'b0;
+        ready     = HREADY;
+        IM_out    = HRDATA;
+        rst_ready = 1'b1;
       end
       DONE: begin
-        HBUSREQ = 1'b0;
-        HADDR   = `AHB_ADDR_BITS'b0;
-        HWRITE  = 1'b0;
-        HWDATA  = `AHB_DATA_BITS'b0;
-        ready   = 1'b1;
-        IM_out  = buf_IM_out;
+        HBUSREQ   = 1'b0;
+        HLOCK     = 1'b0;
+        HADDR     = `AHB_ADDR_BITS'b0;
+        HWRITE    = 1'b0;
+        HWDATA    = `AHB_DATA_BITS'b0;
+        ready     = 1'b1;
+        IM_out    = `AHB_DATA_BITS'b0;
+        rst_ready = 1'b1;
       end
       default: begin
         HBUSREQ = 1'b0;
@@ -121,11 +158,12 @@ module FSMCPUfetchwrapper (
   
   always_ff @(posedge HCLK) begin : IM_out_buf
     case (cs)
-      IDLE:      buf_IM_out <= `AHB_DATA_BITS'b0;
-      ADDRPHASE: buf_IM_out <= `AHB_DATA_BITS'b0; 
-      DATAPHASE: buf_IM_out <= HRDATA; 
-      DONE:      buf_IM_out <= buf_IM_out; 
-      default:   buf_IM_out <= `AHB_DATA_BITS'b0;
+      IDLE:          next_IM_address = IM_address;
+      ADDRPHASE:     next_IM_address = next_IM_address + 'd4; 
+      ADDRDATAPHASE: next_IM_address = next_IM_address + 'd4;  
+      DATAPHASE:     next_IM_address = `AHB_ADDR_BITS'b0;
+      DONE:          next_IM_address = `AHB_ADDR_BITS'b0;
+      default:   ;
     endcase
   end : IM_out_buf
 endmodule

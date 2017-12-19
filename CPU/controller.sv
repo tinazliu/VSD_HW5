@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2017-10-04
 //
-//* Last Modified : Tue 28 Nov 2017 11:56:22 PM CST
+//* Last Modified : Mon 18 Dec 2017 02:20:19 PM CST
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -17,7 +17,9 @@
 
 module controller #(
   OPCODEWIDTH = 7,
-  REGWRITENFROMWIDTH = 3
+  REGWRITENFROMWIDTH = 3,
+  FUN3WIDTH = 3,
+  WORDTYPEWIDTH = 4
 )
 (
   output logic rf_read             ,
@@ -29,10 +31,14 @@ module controller #(
   output logic jump                ,
   output logic en_pcplusimm        ,
   output logic sel_src_pcplusimm   , //0 for pc + imm , 1 for rs1+ imm
+  output logic [WORDTYPEWIDTH - 1 : 0] memaccess_type,
+  output logic memaccess_sign,
   output logic [REGWRITENFROMWIDTH - 1 : 0]reg_write_sel  ,
 
-  input [OPCODEWIDTH - 1 : 0] op
+  input [OPCODEWIDTH - 1 : 0] op,
+  input [FUN3WIDTH - 1 : 0] fun3
 );
+  
   
   always_comb begin : control_signal_assign
     case (op)
@@ -47,6 +53,8 @@ module controller #(
         jump           = 1'b0                   ;
         sel_src_pcplusimm = 1'b0                ;
         en_pcplusimm   = 1'b0                   ;   //0 for unable
+        memaccess_type = `MEMACCESSWORD         ;  //dont'care
+        memaccess_sign = `MEMACCESSSIGN         ;
       end
       `ITYPE: begin
         rf_read        = 1'b1                   ;
@@ -59,6 +67,8 @@ module controller #(
         jump           = 1'b0                   ;
         sel_src_pcplusimm = 1'b0                ;
         en_pcplusimm   = 1'b0                   ;   //0 for unable
+        memaccess_type = `MEMACCESSWORD         ;  //dont'care
+        memaccess_sign = `MEMACCESSSIGN         ;
       end
       `ITYPE_L: begin
         rf_read        = 1'b1                   ;
@@ -71,6 +81,26 @@ module controller #(
         jump           = 1'b0                   ;
         sel_src_pcplusimm = 1'b0                ;
         en_pcplusimm   = 1'b0                   ;   //0 for unable
+        if(fun3 == 3'b000)   begin
+          memaccess_type = `MEMACCESSBYTE       ;
+          memaccess_sign = `MEMACCESSSIGN       ;
+        end 
+        else if(fun3 == 3'b001)begin
+          memaccess_type = `MEMACCESSHALF       ;
+          memaccess_sign = `MEMACCESSSIGN       ;
+        end 
+        else if(fun3 == 3'b100)begin
+          memaccess_type = `MEMACCESSBYTE       ;
+          memaccess_sign = `MEMACCESSUNSIGN     ;
+        end 
+        else if(fun3 == 3'b101)begin
+          memaccess_type = `MEMACCESSHALF       ;
+          memaccess_sign = `MEMACCESSUNSIGN     ;
+        end 
+        else begin
+          memaccess_type = `MEMACCESSWORD       ;
+          memaccess_sign = `MEMACCESSSIGN       ;
+        end
       end
       `ITYPE_J: begin
         rf_read        = 1'b1                   ;
@@ -83,6 +113,8 @@ module controller #(
         jump           = 1'b1                   ;
         sel_src_pcplusimm = 1'b1                ;
         en_pcplusimm   = 1'b1                   ;   //0 for unable
+        memaccess_type = `MEMACCESSWORD         ;  //dont'care
+        memaccess_sign = `MEMACCESSSIGN         ;
       end
       `STYPE: begin
         rf_read        = 1'b1                   ;
@@ -95,6 +127,19 @@ module controller #(
         jump           = 1'b0                   ;
         sel_src_pcplusimm = 1'b0                ;
         en_pcplusimm   = 1'b0                   ;   //0 for unable
+        if(fun3 == 3'b000)   begin
+          memaccess_type = `MEMACCESSBYTE       ;
+          memaccess_sign = `MEMACCESSSIGN       ;
+        end 
+        else if(fun3 == 3'b001)begin
+          memaccess_type = `MEMACCESSHALF       ;
+          memaccess_sign = `MEMACCESSSIGN       ;
+        end 
+        else begin
+          memaccess_type = `MEMACCESSWORD       ;
+          memaccess_sign = `MEMACCESSSIGN       ;
+        end 
+
       end
       `BTYPE: begin
         rf_read        = 1'b1                   ;
@@ -107,6 +152,8 @@ module controller #(
         jump           = 1'b0                   ;
         sel_src_pcplusimm = 1'b0                ;
         en_pcplusimm   = 1'b1                   ;   //1 for enable
+        memaccess_type = `MEMACCESSWORD         ;  //dont'care
+        memaccess_sign = `MEMACCESSSIGN         ;
       end
       `UTYPE: begin
         rf_read        = 1'b0                   ;
@@ -119,6 +166,8 @@ module controller #(
         jump           = 1'b0                   ;
         sel_src_pcplusimm = 1'b0                ;
         en_pcplusimm   = 1'b0                   ;   //0 for unable
+        memaccess_type = `MEMACCESSWORD         ;  //dont'care
+        memaccess_sign = `MEMACCESSSIGN         ;
       end
       `UTYPE_N: begin
         rf_read        = 1'b0                   ;
@@ -131,6 +180,8 @@ module controller #(
         jump           = 1'b0                   ;
         sel_src_pcplusimm = 1'b0                ;
         en_pcplusimm   = 1'b1                   ;   //1 for unable
+        memaccess_type = `MEMACCESSWORD         ;  //dont'care
+        memaccess_sign = `MEMACCESSSIGN         ;
       end
       `JTYPE: begin
         rf_read        = 1'b0                   ;
@@ -143,6 +194,8 @@ module controller #(
         jump           = 1'b1                   ;
         sel_src_pcplusimm = 1'b0                ;
         en_pcplusimm   = 1'b1                   ;   //0 for unable
+        memaccess_type = `MEMACCESSWORD         ;  //dont'care
+        memaccess_sign = `MEMACCESSSIGN         ;
       end
       default: begin
         rf_read        = 1'b0                   ;
@@ -155,6 +208,8 @@ module controller #(
         jump           = 1'b0                   ;
         sel_src_pcplusimm = 1'b0                ;
         en_pcplusimm   = 1'b0                   ;   //0 for unable
+        memaccess_type = `MEMACCESSWORD         ;  //dont'care
+        memaccess_sign = `MEMACCESSSIGN         ;
       end
     endcase
   end : control_signal_assign

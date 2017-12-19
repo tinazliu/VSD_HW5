@@ -2,6 +2,8 @@
 // File created by:  ncverilog
 // Do not modify this file
 //
-CPU/cache_L1.sv
+top_tb.sv
++access+r
 +sv
 +notimingcheck
++define+prog0+noinfo

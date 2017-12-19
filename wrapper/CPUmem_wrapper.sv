@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2017-11-05
 //
-//* Last Modified : Wed 22 Nov 2017 04:05:04 PM CST
+//* Last Modified : Mon 18 Dec 2017 03:20:37 PM CST
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -45,7 +45,6 @@ module CPUmem_wrapper (
   input stall
 );
   always_comb begin : direct_connection
-    HLOCK   = 1'b0;
     HTRANS  = `AHB_TRANS_NONSEQ;
     HSIZE   = `AHB_SIZE_WORD;
     HBURST  = `AHB_BURST_SINGLE;
@@ -54,6 +53,7 @@ module CPUmem_wrapper (
 
   FSMCPUmemwrapper fsm(
     .HBUSREQ(HBUSREQ),
+    .HLOCK(HLOCK),
     .HADDR(HADDR),
     .HWRITE(HWRITE),
     .HWDATA(HWDATA),

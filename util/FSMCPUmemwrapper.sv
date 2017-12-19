@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2017-11-22
 //
-//* Last Modified : Wed 22 Nov 2017 04:24:49 PM CST
+//* Last Modified : Mon 18 Dec 2017 03:46:08 PM CST
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -15,10 +15,13 @@
 //
 
 `include "AHB_def.svh"
+`include "util/ready_counter.sv"
 
-module FSMCPUmemwrapper (
+module FSMCPUmemwrapper #(
+  parameter DELAY = 3
+)(
   output logic HBUSREQ,
-  // output logic HLOCK,
+  output logic HLOCK,
   // output logic [`AHB_TRANS_BITS - 1 : 0] HTRANS,
   output logic [`AHB_ADDR_BITS - 1 : 0] HADDR,
   output logic HWRITE,
@@ -45,8 +48,22 @@ module FSMCPUmemwrapper (
 );
 
   logic [`AHB_DATA_BITS - 1 : 0] buf_DM_out;
-  typedef enum logic [2 - 1 : 0]  {IDLE, ADDRPHASE, DATAPHASE, DONE} State;
+  typedef enum logic [3 - 1 : 0]  {IDLE, ADDRPHASE, DATAPHASE, DONE, RADDRPHASE, RADDRDATAPHASE, RDATAPHASE} State;
   State cs, ns;
+
+  logic [`AHB_DATA_BITS - 1 : 0] next_DM_address;
+
+
+  logic [DELAY - 1 : 0] ready3t;
+  logic rst_ready;
+  ready_counter rc0(
+    .dly(ready3t),
+    .d(1'b1),
+    .ready(HREADY),
+    .clk(HCLK),
+    .rst(rst_ready)
+  );
+
 
   always_ff @(posedge HCLK or HRESETn) begin : next_state
     if (~HRESETn) begin
@@ -60,7 +77,8 @@ module FSMCPUmemwrapper (
 
   always_comb 
     case (cs)
-      IDLE:      if(HGRANT == 1'b1)                       ns = ADDRPHASE;
+      IDLE:      if(HGRANT == 1'b1 && DM_write == 1'b1)   ns = ADDRPHASE;
+                 else if(HGRANT == 1'b1)                  ns = RADDRPHASE;
                  else                                     ns = IDLE;
 
       ADDRPHASE: if(HREADY == 1'b1)                       ns = DATAPHASE;
@@ -73,6 +91,15 @@ module FSMCPUmemwrapper (
       DONE:      if(stall == 1'b0)                        ns = IDLE;
                  else                                     ns = DONE;
 
+      RADDRPHASE:     if(HREADY == 1'b1)                      ns = RADDRDATAPHASE;
+                      else                                    ns = RADDRPHASE;
+                     
+      RADDRDATAPHASE: if(HREADY == 1'b1 && ready3t[2] == 1'b1) ns = RDATAPHASE;
+                      else                                     ns = RADDRDATAPHASE;
+                     
+      RDATAPHASE:     if(HREADY == 1'b1 && stall == 1'b1)      ns = DONE;
+                      else if(HREADY == 1'b1 && stall == 1'b0) ns = IDLE;
+                      else                                     ns = RDATAPHASE;
       default:                                            ns = IDLE;
     endcase
     
@@ -80,54 +107,97 @@ module FSMCPUmemwrapper (
     case (cs)
       IDLE: begin
         HBUSREQ = DM_enable;
+        HLOCK   = DM_enable & (DM_write == 1'b0);
         HADDR   = `AHB_ADDR_BITS'b0;
         HWRITE  = 1'b0;
         HWDATA  = `AHB_DATA_BITS'b0;
         ready   = ~DM_enable;//1'b1;
         DM_out  = `AHB_DATA_BITS'b0;
+        rst_ready = 1'b1;
       end
       ADDRPHASE: begin
         HBUSREQ = 1'b0;
+        HLOCK   = 1'b0;
         HADDR   = {{4'h2}, DM_address[27:0]};
-        HWRITE  = DM_write;
+        HWRITE  = 1'b1;
         HWDATA  = `AHB_DATA_BITS'b0;
         ready   = 1'b0;
         DM_out  = `AHB_DATA_BITS'b0;
+        rst_ready = 1'b1;
       end
       DATAPHASE: begin
         HBUSREQ = 1'b0;
+        HLOCK   = 1'b0;
         HADDR   = `AHB_ADDR_BITS'b0;
         HWRITE  = 1'b0;
         HWDATA  = DM_in;
         ready   = HREADY;
         DM_out  = HRDATA;
+        rst_ready = 1'b1;
       end
       DONE: begin
         HBUSREQ = 1'b0;
-        HADDR   = `AHB_ADDR_BITS'b0;
-        HWRITE  = 1'b0;
-        HWDATA  = `AHB_DATA_BITS'b0;
-        ready   = 1'b1;
-        DM_out  = buf_DM_out;
-      end
-      default: begin
-        HBUSREQ = 1'b0;
+        HLOCK   = 1'b0;
         HADDR   = `AHB_ADDR_BITS'b0;
         HWRITE  = 1'b0;
         HWDATA  = `AHB_DATA_BITS'b0;
         ready   = 1'b1;
         DM_out  = `AHB_DATA_BITS'b0;
+        rst_ready = 1'b1;
+      end
+      RADDRPHASE: begin
+        HBUSREQ   = 1'b0;
+        HLOCK     = 1'b1;
+        HADDR     = next_DM_address;
+        HWRITE    = 1'b0;
+        HWDATA    = `AHB_DATA_BITS'b0;
+        ready     = 1'b0;
+        DM_out    = `AHB_DATA_BITS'b0;
+        rst_ready = 1'b0;
+      end
+      RADDRDATAPHASE: begin
+        HBUSREQ   = 1'b0;
+        HLOCK     = ~ready3t[2];
+        HADDR     = next_DM_address;
+        HWRITE    = 1'b0;
+        HWDATA    = `AHB_DATA_BITS'b0;
+        ready     = HREADY;
+        DM_out    = HRDATA;
+        rst_ready = 1'b0;
+      end
+      RDATAPHASE: begin
+        HBUSREQ   = 1'b0;
+        HLOCK     = 1'b0;
+        HADDR     = `AHB_ADDR_BITS'b0;
+        HWRITE    = 1'b0;
+        HWDATA    = `AHB_DATA_BITS'b0;
+        ready     = HREADY;
+        DM_out    = HRDATA;
+        rst_ready = 1'b1;
+      end
+      default: begin
+        HBUSREQ = DM_enable;
+        HLOCK   = DM_enable & (DM_write == 1'b0);
+        HADDR   = `AHB_ADDR_BITS'b0;
+        HWRITE  = 1'b0;
+        HWDATA  = `AHB_DATA_BITS'b0;
+        ready   = ~DM_enable;//1'b1;
+        DM_out  = `AHB_DATA_BITS'b0;
+        rst_ready = 1'b1;
       end
     endcase
   end : comb
   
   always_ff @(posedge HCLK) begin : DM_out_buf
     case (cs)
-      IDLE:      buf_DM_out <= `AHB_DATA_BITS'b0;
-      ADDRPHASE: buf_DM_out <= `AHB_DATA_BITS'b0; 
-      DATAPHASE: buf_DM_out <= HRDATA; 
-      DONE:      buf_DM_out <= buf_DM_out; 
-      default:   buf_DM_out <= `AHB_DATA_BITS'b0;
+      IDLE:      next_DM_address = DM_address;
+      ADDRPHASE: next_DM_address = DM_address; 
+      DATAPHASE: next_DM_address = DM_address;  
+      DONE:      next_DM_address = `AHB_ADDR_BITS'b0;
+      RADDRPHASE:     next_DM_address = next_DM_address + 'd4; 
+      RADDRDATAPHASE: next_DM_address = next_DM_address + 'd4;  
+      RDATAPHASE:     next_DM_address = `AHB_ADDR_BITS'b0;
+      default:  ; 
     endcase
   end : DM_out_buf
 endmodule

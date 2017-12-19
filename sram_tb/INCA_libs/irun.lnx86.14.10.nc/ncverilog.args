@@ -3,5 +3,6 @@
 // Do not modify this file
 //
 tag_tb.sv
++sv
 +access+r
 +notimingcheck

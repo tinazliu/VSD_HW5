@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2017-12-17
 //
-//* Last Modified : Sun 17 Dec 2017 02:30:44 PM CST
+//* Last Modified : Tue 19 Dec 2017 01:08:05 AM CST
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -39,7 +39,7 @@ module  valid_array #(
       vdata = 'b0;
     end
     else begin
-      if (cs_valid == 1'b1) begin
+      if (cs_valid == 1'b1 && ~web_valid ) begin
         vdata[addr_index] = ~web_valid;
       end
     end

@@ -7,7 +7,7 @@
 
 * Creation Date : 2017-10-01
 
-* Last Modified : Fri 24 Nov 2017 10:24:18 PM CST
+* Last Modified : Tue 19 Dec 2017 11:50:01 AM CST
 
 * Created By :  Ji-Ying, Li
 
@@ -48,7 +48,7 @@ module regfile #(
   end :rf_read
 
   //rf write
-  always_ff @(posedge clk or posedge rst) begin : rf_write
+  always_ff @(posedge ~clk or posedge rst) begin : rf_write
     if (rst) begin
       for (i = 0; i < RFSIZE; i=i+1) begin
         mem[i] <= {(RFDATAWIDTH){1'b0}};

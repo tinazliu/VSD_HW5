@@ -110,6 +110,8 @@ FSM = 1
 Branch = 1
 [DesignTree]
 IfShowModule = {TRUE, FALSE}
+[DisabledMessages]
+version = Verdi_M-2017.03
 [Editor]
 editorName = TurboEditor
 [Emacs]
@@ -195,7 +197,9 @@ StickSet-LineWidth = 1
 StickSet-FillColor = purple6
 StickSet-TextColor = black
 [FSM_Dlg-Print]
-Orientation = Landscape   
+Orientation = Landscape
+[FileBrowser]
+nWaveOpenFsdbDirHistory = "\"/home/ldap-users/jyli/Documents/VSD_2017fall/workspace/sram_tb/tag_tb.fsdb\"" "\"/home/ldap-users/jyli/Documents/VSD_2017fall/workspace/tag_tb.fsdb\""
 [Form]
 version = Verdi_M-2017.03
 [General]
@@ -229,7 +233,7 @@ filter_case_sensitive = FALSE
 filter_full_path = FALSE
 load_detail_for_funcov = FALSE
 sort_limit = 100000
-ignoreDBVersionChecking = FALSE      
+ignoreDBVersionChecking = FALSE 
 [HB]
 ViewSchematic = FALSE
 windowLayout = 0 0 804 500 182 214 804 148
@@ -298,6 +302,13 @@ PrinterName = lp
 FileName = test.ps
 PaperSize = A4 - 210x297 (mm)
 ColorPrint = FALSE
+[QtDialog]
+SetWindowTimeUnitDialog = 366,578,443,95
+ActiveFileDialog = 668,403,584,285
+QwWarnMsgDlg = 1317,497,600,250
+QwUserAskDlg = 798,431,324,137
+openFileDlg = 647,289,632,513
+qWaveSignalDialog = 707,239,850,509
 [Session Cache]
 1 = string (session file name)
 2 = string (session file name)
@@ -507,8 +518,8 @@ waveform_vertical_scroll_bar = TRUE
 scope_to_save_with_macro
 open_file_dir
 open_rc_file_dir
-getSignalForm = 0 0 800 479 100 30 100 30
-viewPort = 44 229 960 332 100 65
+getSignalForm = 707 239 850 509 234 411 562 198
+viewPort = 0 31 1920 971 183 109
 signalSpacing = 5
 digitalSignalHeight = 15
 analogSignalHeight = 98
@@ -568,6 +579,7 @@ analogVoltageStyle = pwl
 analogCurrentStyle = pwl
 analogOthersStyle = pwl
 busSignalLayer = -c ID_ORANGE8
+busXLayer = -c ID_RED5
 busZLayer = -c ID_ORANGE6
 busMixedLayer = -c ID_GREEN5
 busNotComputedLayer = -c ID_GRAY1
@@ -763,6 +775,8 @@ curveWindow_Drag&Drop_Mode = TRUE
 hspiceIncOpenMode = TRUE
 pcSelectMode = TRUE
 hierarchyDelimiter = /
+RecentFile1 = "\"/home/ldap-users/jyli/Documents/VSD_2017fall/workspace/tag_tb.fsdb\""
+RecentFile2 = "\"/home/ldap-users/jyli/Documents/VSD_2017fall/workspace/sram_tb/tag_tb.fsdb\""
 open_file_time_range = FALSE
 value_window_aligment = Right
 signal_window_alignment = Auto
@@ -978,7 +992,7 @@ AddImportArgument = TRUE
 LineBreakWithScope = TRUE
 StopAfterCompileOption = -tcl
 [turboSchema_Printer_Options]
-Orientation = Landscape   
+Orientation = Landscape
 [turbo_library]
 bdb_load_scope = 
 [verisity]

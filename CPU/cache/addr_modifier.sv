@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2017-12-16
 //
-//* Last Modified : Sun 17 Dec 2017 05:10:47 PM CST
+//* Last Modified : Mon 18 Dec 2017 05:34:34 PM CST
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -26,7 +26,7 @@ module  addr_modifier#(
 );
 
   always_comb begin : modifier
-    SYSaddr = (Prw == `PREAD)? {Paddr[ADDRWIDTH-1:ADDRWIDTH-22-6+1], 4'b0}: Paddr;
+    SYSaddr = (Prw == `PREAD)? {Paddr[ADDRWIDTH-1:ADDRWIDTH-22-6], 4'b0}: Paddr;
   end : modifier
   
 endmodule

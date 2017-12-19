@@ -7,7 +7,7 @@
 
 * Creation Date : 2017-09-28
 
-* Last Modified : Sun 17 Dec 2017 04:45:12 PM CST
+* Last Modified : Mon 18 Dec 2017 01:55:11 PM CST
 
 * Created By :  Ji-Ying, Li
 
@@ -100,6 +100,15 @@
 // src of  pc + imm/rs1
 `define PCADDIMM 1'b0
 `define PCADDRS1 1'b1
+
+//load word byte half
+
+`define MEMACCESSWORD 4'b0000
+`define MEMACCESSHALF 4'b1100
+`define MEMACCESSBYTE 4'b1110
+
+`define MEMACCESSSIGN   1'b0
+`define MEMACCESSUNSIGN 1'b1
 
 // cache
 `define PWRITE 1'b1

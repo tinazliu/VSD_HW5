@@ -1,0 +1,252 @@
+//-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
+//
+//
+//* File Name : cache_controller.sv
+//
+//* Purpose :
+//
+//* Creation Date : 2017-12-17
+//
+//* Last Modified : Tue 19 Dec 2017 06:03:21 AM CST
+//
+//* Created By :  Ji-Ying, Li
+//
+//_._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._
+//
+
+`include "macro.sv"
+// `include "CPU/cache/ready_counter.sv"
+
+module  cache_controller #(
+  parameter DATAWIDTH = 32,
+  parameter ARRAYWEBWIDTH = 4,
+  parameter SELOUTPUTWIDTH = 2,
+  parameter SELINPUTWIDTH = 4,
+  parameter BLOCKOFFSETWIDTH = 2,
+  parameter STATESWIDTH = 3,
+  parameter DELAY = 3
+)(
+  output logic Pready,
+  output logic cs_tag,
+  output logic oe_tag,
+  output logic web_tag,
+  output logic cs_valid,
+  output logic oe_valid,
+  output logic web_valid,
+  output logic cs_data,
+  output logic oe_data,
+  output logic [ARRAYWEBWIDTH - 1 : 0] web_data,
+  output logic SYSstrobe,
+  output logic SYSrw,
+  output logic pdataOE,
+  output logic sysdataOE,
+  output logic sel_dataarray_in,
+  output logic [SELINPUTWIDTH - 1 : 0] sel_dataunit_in,
+  output logic [SELOUTPUTWIDTH - 1 : 0] sel_dataunit_out,
+
+  input Pstrobe,
+  input Prw,
+  input [ARRAYWEBWIDTH - 1 : 0] store_type,
+  input isHit,
+  input SYSready,
+  input [BLOCKOFFSETWIDTH - 1 : 0] block_offset,
+  input stall,
+  input clk,
+  input rst
+);
+  typedef enum logic [STATESWIDTH - 1 : 0] {IDLE, READ, READMEM, READDONE, WRITE, WRITEDONE} State;
+  State cs, ns;
+  logic [DELAY - 1 : 0] ready3t;
+  logic rst_readycounter;
+  
+  ready_counter rc0(
+    .dly(ready3t),
+    .d(1'b1),
+    .ready(SYSready),
+    .clk(clk),
+    .rst(rst_readycounter)
+  );
+
+  always_ff @(posedge clk or rst) begin : state_transfer
+    if (rst) cs <= IDLE;
+    else cs <= ns;
+  end : state_transfer
+
+  always_comb begin : next_state
+    case (cs)
+      IDLE:     if(Pstrobe && Prw == `PREAD) ns = READ;
+                else if (Pstrobe && Prw == `PWRITE) ns = WRITE;
+                else ns = IDLE;
+      READ:     if(isHit == `READHIT) ns = READDONE;
+                else ns = READMEM;
+      READMEM:  if (ready3t[2] && SYSready) ns = READDONE;
+                else ns = READMEM;
+      READDONE: if(stall) ns = READDONE;
+                else ns = IDLE;
+      WRITE:    if(SYSready && stall) ns = WRITEDONE;
+                else if(SYSready) ns = IDLE;
+                else ns = WRITE;
+      WRITEDONE:if(stall) ns = WRITEDONE;
+                else ns = IDLE;
+      default: ns = cs;
+    endcase
+  end : next_state
+  
+  always_comb begin : hit_decision
+  end : hit_decision
+
+  task OutputVecBasedOnState;
+    input [3:0] vector;
+    begin
+      {
+        web_data
+      } = vector;
+    end
+  endtask
+  //b_data, oe_data, sel_dataunit_in, sel_dataunit_out,
+  
+  always_comb begin : alc 
+    if(Pstrobe && Prw == `PWRITE) begin
+      sel_dataunit_in = (block_offset == 2'b00)? 4'b0001:
+                        (block_offset == 2'b01)? 4'b0010:
+                        (block_offset == 2'b10)? 4'b0100:
+                        (block_offset == 2'b11)? 4'b1000: 4'b0;
+    end
+    else if (Pstrobe && cs == READMEM)begin
+      sel_dataunit_in = (ready3t[2])? {SYSready, 3'b0}:
+                        (ready3t[1])? {1'b0, SYSready, 2'b0}:
+                        (ready3t[0])? {2'b0, SYSready, 1'b0}:{3'b0, SYSready};
+    end
+    else sel_dataunit_in = 4'b0;
+    sel_dataunit_out = block_offset;
+    web_data = store_type;
+  end : alc
+
+  always_comb begin : FSM_comb
+    case (cs)
+      IDLE: begin
+        Pready = ~Pstrobe;
+        cs_tag = Pstrobe;
+        oe_tag = Pstrobe;
+        web_tag= 1'b1; //disable
+        cs_valid = Pstrobe;
+        oe_valid = Pstrobe;
+        web_valid= 1'b1; //disable
+        cs_data = Pstrobe && Prw == `PWRITE;
+        oe_data = Pstrobe && Prw == `PWRITE;
+        SYSstrobe = Pstrobe && Prw == `PWRITE;
+        SYSrw = Pstrobe && Prw == `PWRITE;
+        pdataOE = 1'b0;
+        sysdataOE = 1'b0;
+        sel_dataarray_in = 1'b1; // 1 from pdata_in
+        rst_readycounter = 1'b1;
+      end
+      READ: begin
+        Pready = 1'b0;
+        cs_tag = 1'b1;
+        oe_tag = 1'b1;
+        web_tag= 1'b1; //disable
+        cs_valid = 1'b1;
+        oe_valid = 1'b1;
+        web_valid= 1'b1; //disable
+        cs_data = isHit;
+        oe_data = isHit;
+        SYSstrobe = ~isHit;
+        SYSrw = 1'b0;
+        pdataOE = 1'b0;
+        sysdataOE = 1'b1;
+        sel_dataarray_in = 1'b0; // 0 from sys
+        rst_readycounter = 1'b1;
+      end
+      READMEM: begin
+        Pready = 1'b0;
+        cs_tag = 1'b1;
+        oe_tag = 1'b0;
+        web_tag= 1'b0; //enable
+        cs_valid = 1'b1;
+        oe_valid = 1'b0;
+        web_valid= 1'b0; //enable
+        cs_data = 1'b1;
+        oe_data = 1'b1; 
+        SYSstrobe = ~ready3t[2];
+        SYSrw = 1'b0; // 0 for read
+        pdataOE = 1'b0; 
+        sysdataOE = 1'b0;
+        sel_dataarray_in = 1'b0; // 0 from sys
+        rst_readycounter = 1'b0;
+      end
+      READDONE: begin
+        Pready = 1'b1;
+        cs_tag = 1'b0;
+        oe_tag = 1'b0;
+        web_tag= 1'b1; //disable
+        cs_valid = 1'b0;
+        oe_valid = 1'b0;
+        web_valid= 1'b1; //disable
+        cs_data = 1'b1;
+        oe_data = 1'b1;
+        SYSstrobe = 1'b0;
+        SYSrw = 1'b0;
+        pdataOE = 1'b1;
+        sysdataOE = 1'b0;
+        sel_dataarray_in = 1'b1; // 1 from pdata_in //dont cara
+        rst_readycounter = 1'b1;
+      end
+      WRITE: begin
+        Pready = SYSready;
+        cs_tag = 1'b0;
+        oe_tag = 1'b0;
+        web_tag= 1'b1; //disable
+        cs_valid = 1'b0;
+        oe_valid = 1'b0;
+        web_valid= 1'b1; //disable
+        cs_data = 1'b1;
+        oe_data = 1'b1;
+        SYSstrobe = ~SYSready;
+        SYSrw = 1'b1;
+        pdataOE = 1'b0;
+        sysdataOE = 1'b1;
+        sel_dataarray_in = 1'b1; // 1 from pdata_in
+        rst_readycounter = 1'b1;
+      end
+      WRITEDONE: begin
+        Pready = 1'b1;
+        cs_tag = 1'b0;
+        oe_tag = 1'b0;
+        web_tag= 1'b1; //disable
+        cs_valid = 1'b0;
+        oe_valid = 1'b0;
+        web_valid= 1'b1; //disable
+        cs_data = 1'b0;
+        oe_data = 1'b0;
+        SYSstrobe = 1'b0;
+        SYSrw = 1'b1;
+        pdataOE = 1'b0;
+        sysdataOE = 1'b0;
+        sel_dataarray_in = 1'b1; // 1 from pdata_in
+        rst_readycounter = 1'b1;
+      end
+      default: begin
+        Pready = ~Pstrobe;
+        cs_tag = Pstrobe;
+        oe_tag = Pstrobe;
+        web_tag= 1'b1; //disable
+        cs_valid = Pstrobe;
+        oe_valid = Pstrobe;
+        web_valid= 1'b1; //disable
+        cs_data = Pstrobe && Prw == `PWRITE;
+        oe_data = Pstrobe && Prw == `PWRITE;
+        SYSstrobe = Pstrobe && Prw == `PWRITE;
+        SYSrw = Pstrobe && Prw == `PWRITE;
+        pdataOE = 1'b0;
+        sysdataOE = 1'b0;
+        sel_dataarray_in = 1'b1; // 1 from pdata_in
+        rst_readycounter = 1'b1;
+        
+      end
+    endcase
+  end : FSM_comb
+  
+
+  
+endmodule

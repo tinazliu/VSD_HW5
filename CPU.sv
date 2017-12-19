@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2017-10-08
 //
-//* Last Modified : Wed 29 Nov 2017 12:05:42 AM CST
+//* Last Modified : Tue 19 Dec 2017 02:44:19 PM CST
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -27,6 +27,7 @@
 `include "CPU/forwarding_unit.sv"
 `include "CPU/data_hazard_unit.sv"
 `include "CPU/branch_decision_unit.sv"
+`include "CPU/lw_proccessing_unit.sv"
 
 module CPU #(
   parameter PCWIDTH              = 32,
@@ -45,12 +46,14 @@ module CPU #(
   parameter ALUOPWIDTH           = 4 ,
   parameter WBSELWIDTH           = 3 ,
   parameter FORWARDSELWIDTH      = 2 ,
-  parameter CUTSETWIDTH          = 2 
+  parameter CUTSETWIDTH          = 2 ,
+  parameter WORDTYPEWIDTH        = 4
 )(
   output logic IM_enable,
   output logic [PCWIDTH - 1 : 0]  IM_address,
   output logic DM_write,
   output logic DM_enable,
+  output logic [WORDTYPEWIDTH - 1 : 0] store_type,
   output logic [REGWIDTH - 1 : 0] DM_in,
   output logic [PCWIDTH - 1 : 0]  DM_address,
   input logic [REGWIDTH - 1 : 0] IM_out,
@@ -160,9 +163,10 @@ module CPU #(
   logic [REGWIDTH - 1 : 0] rs2, rs1;
   logic [IMMWIDTH - 1 : 0] imm_ID;
   logic [IMMWIDTH - 1 : 0] pcplusimm_ID;
-  logic alu_src_sel_ID, en_pcplusimm_ID, DM_write_ID, DM_en_ID, jump_ID, rf_write_ID, branch_ID, pcadd_sel_ID;
+  logic alu_src_sel_ID, en_pcplusimm_ID, DM_write_ID, DM_en_ID, jump_ID, rf_write_ID, branch_ID, pcadd_sel_ID, memaccess_sign_ID;
   logic [WBSELWIDTH - 1 : 0] reg_write_sel_ID;
   logic [ALUOPWIDTH - 1 : 0] aluop_ID;
+  logic [WORDTYPEWIDTH - 1 : 0] memaccess_type_ID;
 
   //hazard control
   logic rf_write_hazard, branch_hazard, DM_en_hazard, jump_hazard, DM_write_hazard;
@@ -201,7 +205,7 @@ module CPU #(
   
   //****************CPU input*****************//
   always_comb begin : mux2to1_ID
-    unique case (hazard_nop_sel)
+    case (hazard_nop_sel)
       `HAZARDSELEMP: begin
         rf_write_ID = 1'b0; 
         branch_ID   = 1'b0;
@@ -298,8 +302,11 @@ module CPU #(
     .jump        (jump_hazard)      , 
     .sel_src_pcplusimm(pcadd_sel_ID),
     .en_pcplusimm(en_pcplusimm_ID)  , 
+    .memaccess_type(memaccess_type_ID) ,
+    .memaccess_sign(memaccess_sign_ID) ,
     .reg_write_sel(reg_write_sel_ID),
-    .op(op)
+    .op(op),
+    .fun3(fun3)
   );
 
   regfile RF1(
@@ -333,9 +340,10 @@ module CPU #(
   logic [REGADDRWIDTH - 1 : 0] rd_addr_EX, rs1_addr_EX, rs2_addr_EX;
   logic [REGWIDTH - 1 : 0] rs2_EX, rs1_EX, alusrc1, alusrc2, forwardB_out, alu_result_EX;
   logic [IMMWIDTH - 1 : 0] imm_EX;
-  logic alu_src_sel_EX, DM_write_EX, DM_en_EX, rf_write_EX;
+  logic alu_src_sel_EX, DM_write_EX, DM_en_EX, rf_write_EX, memaccess_sign_EX;
   logic [WBSELWIDTH - 1 : 0] reg_write_sel_EX;
   logic [ALUOPWIDTH - 1 : 0] aluop_EX;
+  logic [WORDTYPEWIDTH - 1 : 0] memaccess_type_EX;
   
   always_ff @(posedge clk ) begin : cutset_IDEX
     case (cutset_sel_IDEX)
@@ -354,6 +362,8 @@ module CPU #(
         rs2_addr_EX       <= {(REGADDRWIDTH){1'b0}};
         imm_EX            <= {(REGWIDTH){1'b0}};
         aluop_EX          <= {(ALUOPWIDTH){1'b0}};
+        memaccess_type_EX <= `MEMACCESSWORD;
+        memaccess_sign_EX <= `MEMACCESSSIGN;
       end
       `CUTSETSTALL: begin
         alu_src_sel_EX    <= alu_src_sel_EX   ;
@@ -370,6 +380,8 @@ module CPU #(
         rs2_addr_EX       <= rs2_addr_EX      ;
         imm_EX            <= imm_EX           ;
         aluop_EX          <= aluop_EX         ;
+        memaccess_type_EX <= memaccess_type_EX;
+        memaccess_sign_EX <= memaccess_sign_EX ;
       end
       default: begin
         alu_src_sel_EX    <= alu_src_sel_ID   ;
@@ -386,6 +398,8 @@ module CPU #(
         rs2_addr_EX       <= rs2_addr         ;
         imm_EX            <= imm_ID           ;
         aluop_EX          <= aluop_ID         ;
+        memaccess_type_EX <= memaccess_type_ID;
+        memaccess_sign_EX <= memaccess_sign_ID ;
       end
     endcase
   end : cutset_IDEX
@@ -447,9 +461,10 @@ module CPU #(
   logic [REGADDRWIDTH - 1 : 0] rd_addr_MEM;
   logic [REGWIDTH - 1 : 0] rs2_MEM, alu_result_MEM;
   logic [IMMWIDTH - 1 : 0] imm_MEM;
-  logic DM_write_MEM, DM_en_MEM, rf_write_MEM;
+  logic DM_write_MEM, DM_en_MEM, rf_write_MEM, memaccess_sign_MEM;
   logic [WBSELWIDTH - 1 : 0] reg_write_sel_MEM;
 
+  logic [WORDTYPEWIDTH - 1 : 0] memaccess_type_MEM;
   always_ff @(posedge clk) begin :cutset_EXMEM
     case (cutset_sel_EXMEM)
       `CUTSETFLUSH: begin
@@ -463,6 +478,8 @@ module CPU #(
         alu_result_MEM     <= {(REGWIDTH){1'b0}};
         rd_addr_MEM        <= {(REGADDRWIDTH){1'b0}};
         imm_MEM            <= {(REGWIDTH){1'b0}};
+        memaccess_type_MEM <= `MEMACCESSWORD;
+        memaccess_sign_MEM <= `MEMACCESSSIGN ;
       end
       `CUTSETSTALL: begin
         DM_write_MEM      <= DM_write_MEM      ;
@@ -475,6 +492,8 @@ module CPU #(
         alu_result_MEM    <= alu_result_MEM    ;
         rd_addr_MEM       <= rd_addr_MEM       ;
         imm_MEM           <= imm_MEM           ;
+        memaccess_type_MEM <= memaccess_type_MEM ;
+        memaccess_sign_MEM <= memaccess_sign_MEM ;
       end
       default: begin
         DM_write_MEM      <= DM_write_EX       ;
@@ -487,6 +506,8 @@ module CPU #(
         alu_result_MEM    <= alu_result_EX     ;
         rd_addr_MEM       <= rd_addr_EX        ;
         imm_MEM           <= imm_EX            ;
+        memaccess_type_MEM <= memaccess_type_EX;
+        memaccess_sign_MEM <= memaccess_sign_EX;
       end
     endcase
   end :cutset_EXMEM
@@ -521,6 +542,7 @@ module CPU #(
   assign DM_enable = DM_en_MEM;
   assign DM_address = alu_result_MEM;
   assign DM_in      = rs2_MEM;
+  assign store_type = memaccess_type_MEM;
 
   //===================================================
   // *stage name:WB
@@ -533,10 +555,12 @@ module CPU #(
   logic [REGADDRWIDTH - 1 : 0] rd_addr_WB;
   logic [REGWIDTH - 1 : 0] alu_result_WB;
   logic [IMMWIDTH - 1 : 0] imm_WB;
-  logic rf_write_WB;
+  logic rf_write_WB, memaccess_sign_WB;
   logic [WBSELWIDTH - 1 : 0] reg_write_sel_WB;
   logic [REGWIDTH - 1 : 0] DM_out_buf;
+  logic [REGWIDTH - 1 : 0] DM_out_buf_w;
 
+  logic [WORDTYPEWIDTH - 1 : 0] memaccess_type_WB;
   always_ff @(posedge clk) begin : cutset_MEMWB
     case (cutset_sel_MEMWB)
       `CUTSETFLUSH: begin
@@ -548,6 +572,8 @@ module CPU #(
         imm_WB            <= {(REGWIDTH){1'b0}}    ;
         rd_addr_WB        <= {(REGADDRWIDTH){1'b0}};
         DM_out_buf        <= {(REGWIDTH){1'b0}}    ;
+        memaccess_type_WB <= `MEMACCESSWORD        ;
+        memaccess_sign_WB <= `MEMACCESSSIGN        ;
       end
       `CUTSETSTALL: begin
         rf_write_WB       <= rf_write_WB       ;
@@ -558,6 +584,8 @@ module CPU #(
         imm_WB            <= imm_WB            ;
         rd_addr_WB        <= rd_addr_WB        ;
         DM_out_buf        <= DM_out_buf        ;
+        memaccess_type_WB <= memaccess_type_WB ;
+        memaccess_sign_WB <= memaccess_sign_WB ;
       end
       default: begin
         rf_write_WB       <= rf_write_MEM       ;
@@ -568,6 +596,8 @@ module CPU #(
         imm_WB            <= imm_MEM            ;
         rd_addr_WB        <= rd_addr_MEM        ;
         DM_out_buf        <= DM_out             ;
+        memaccess_type_WB <= memaccess_type_MEM ;
+        memaccess_sign_WB <= memaccess_sign_MEM ;
       end
     endcase
   end : cutset_MEMWB
@@ -581,7 +611,7 @@ module CPU #(
         wbdata = alu_result_WB;
       end
       `WBFROMDM : begin
-        wbdata = DM_out_buf;
+        wbdata = DM_out_buf_w;
       end
       `WBFROMIMM : begin
         wbdata = imm_WB;
@@ -601,6 +631,13 @@ module CPU #(
   assign rd_addr_global = rd_addr_WB;
   assign rf_write_global = rf_write_WB;
   
+  lw_proccessing_unit lpu0 (
+    .out(DM_out_buf_w),
+    .DM_out_buf(DM_out_buf),
+    .memaccess_type_WB(memaccess_type_WB),
+    .memaccess_sign_WB(memaccess_sign_WB)
+  );
+
   //global instance
   forwarding_unit fwd_u0(
     .sel_forwardA(sel_forwardA),
@@ -621,9 +658,11 @@ module CPU #(
   data_hazard_unit dhu0(
     .hazard_nop_sel(hazard_nop_sel),
     .DM_write_EX(DM_write_EX),
+    .DM_en_EX(DM_en_EX),
     .DM_write_MEM(DM_write_MEM),
     .rf_write_EX(rf_write_EX),
     .branch_hazard(branch_hazard),
+    .jump_hazard(jump_hazard),
     .rd_addr_EX(rd_addr_EX),
     .rd_addr_MEM(rd_addr_MEM),
     .rs1_addr(rs1_addr),

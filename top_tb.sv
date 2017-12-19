@@ -1,7 +1,7 @@
 `define CYCLE 10 // Max Value: 20 ns
 `define MAX_CYCLE_CNT 10000000 // You can modify this
-`include "data_array.v"
 `include "tag_array.v"
+`include "data_array.v"
 `timescale 1ns/10ps
 `ifdef syn
   `include "CPU_syn.v"
@@ -116,7 +116,7 @@ module top_tb;
       #(`CYCLE)
       if (DM1.mem_data[65535] == 32'hffff_f000)
       begin
-        break; 
+        break;
       end
     end
     $display( "\nDone\n" );
