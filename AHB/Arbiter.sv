@@ -1,10 +1,20 @@
-//================================================
-// Auther:      Hsieh Hsien-Hua (Henry)
-// Filename:    Arbiter.sv
-// Description: Use Round-Robin to decide master 
-//              priority
-// Version:     1.0
-//================================================
+//-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.-.
+//
+//
+//* File Name : Arbiter.sv
+//
+//* Purpose : extension from Henry Arbiter.sv
+//
+//* Creation Date : 2017-12-19
+//
+//* Last Modified : Tue 19 Dec 2017 08:48:36 PM CST
+//
+//* Created By :  Ji-Ying, Li 
+//
+//_._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._._
+//
+
+
 
 `include "AHB_def.svh"
 
@@ -112,3 +122,4 @@ module Arbiter(
         HMASTLOCK <= #1 NextLock;
   end
 endmodule
+
