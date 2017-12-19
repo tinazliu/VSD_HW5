@@ -1,9 +1,0 @@
-//
-// File created by:  ncverilog
-// Do not modify this file
-//
-top_tb.sv
-+access+r
-+sv
-+notimingcheck
-+define+prog0+noinfo
