@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2017-11-22
 //
-//* Last Modified : Mon 18 Dec 2017 03:46:08 PM CST
+//* Last Modified : Wed Dec 20 15:41:58 2017
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -65,7 +65,7 @@ module FSMCPUmemwrapper #(
   );
 
 
-  always_ff @(posedge HCLK or HRESETn) begin : next_state
+  always_ff @(posedge HCLK) begin : next_state
     if (~HRESETn) begin
       cs <= IDLE;
     end

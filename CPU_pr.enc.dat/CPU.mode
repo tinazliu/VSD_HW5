@@ -1,0 +1,306 @@
+catch { setAnalysisMode -analysisType onChipVariation }
+catch { setAnalysisMode -checkType setup }
+catch { setAnalysisMode -clkSrcPath true }
+catch { setAnalysisMode -clockGatingCheck true }
+catch { setAnalysisMode -clockPropagation sdcControl }
+catch { setAnalysisMode -cppr none }
+catch { setAnalysisMode -enableMultipleDriveNet true }
+catch { setAnalysisMode -log true }
+catch { setAnalysisMode -sequentialConstProp false }
+catch { setAnalysisMode -skew true }
+catch { setAnalysisMode -timeBorrowing true }
+catch { setAnalysisMode -timingSelfLoopsNoSkew false }
+catch { setAnalysisMode -usefulSkew false }
+catch { setAnalysisMode -useOutputPinCap true }
+catch { setAnalysisMode -virtualIPO false }
+catch { setAnalysisMode -warn true }
+catch { setOptMode -drcMargin 0 }
+catch { setOptMode -effort high }
+catch { setOptMode -fixCap true }
+catch { setOptMode -fixDrc true }
+catch { setOptMode -fixFanoutLoad true }
+catch { setOptMode -fixTran true }
+catch { setOptMode -maxLocalDensity 0.98 }
+catch { setOptMode -optimizeFF true }
+catch { setOptMode -rPlace true }
+catch { setOptMode -setupTargetSlack 0 }
+setExtractRCMode  -engine postRoute -total_c_th 5 -relative_c_th 0.03 -coupling_c_th 3 -minNetTermNrToBeInMem 50
+catch { setCTSMode -moveGateLimit 25 }
+catch {setNanoRouteMode -quiet -droutePostRouteSpreadWire "false"}
+catch {setNanoRouteMode -quiet -routeWithSiDriven true}
+catch {setNanoRouteMode -quiet -routeWithSiPostRouteFix true}
+catch {setNanoRouteMode -quiet -routeWithTimingDriven true}
+catch {setNanoRouteMode -quiet -timingEngine ""}
+
+catch { setPlaceMode -fp false }
+catch { setPlaceMode -useNP true }
+catch { setPlaceMode -WLHighEffort false }
+setDontUse AN2 false
+setDontUse AN2B1 false
+setDontUse AN2B1S false
+setDontUse AN2P false
+setDontUse AN2S false
+setDontUse AN3 false
+setDontUse AN3B1 false
+setDontUse AN3B1P false
+setDontUse AN3B1S false
+setDontUse AN3B2 false
+setDontUse AN3B2P false
+setDontUse AN3B2S false
+setDontUse AN3P false
+setDontUse AN3S false
+setDontUse AN4 false
+setDontUse AN4B1 false
+setDontUse AN4B1S false
+setDontUse AN4S false
+setDontUse AN4T false
+setDontUse AO112 false
+setDontUse AO112P false
+setDontUse AO112S false
+setDontUse AO12 false
+setDontUse AO12P false
+setDontUse AO12S false
+setDontUse AO13 false
+setDontUse AO13S false
+setDontUse AO22 false
+setDontUse AO222 false
+setDontUse AO222S false
+setDontUse AO22S false
+setDontUse AOI112HP false
+setDontUse AOI112HT false
+setDontUse AOI12HS false
+setDontUse AOI12HT false
+setDontUse AOI13H false
+setDontUse AOI13HP false
+setDontUse AOI13HT false
+setDontUse AOI222H false
+setDontUse AOI222HP false
+setDontUse AOI22HP false
+setDontUse AOI22HT false
+setDontUse AOI22S false
+setDontUse BUFB1 false
+setDontUse BUFB2 false
+setDontUse BUFT1 false
+setDontUse BUFT2 false
+setDontUse CMPE4 false
+setDontUse CMPE4S false
+setDontUse DBHRBN false
+setDontUse DBHRBS false
+setDontUse DELB false
+setDontUse DELC false
+setDontUse DFCLRBN false
+setDontUse DFFN false
+setDontUse DFFRBN false
+setDontUse DFFRBS false
+setDontUse DFFS false
+setDontUse DFTRBN false
+setDontUse DFTRBS false
+setDontUse DFZN false
+setDontUse DFZRBN false
+setDontUse DFZRBS false
+setDontUse DFZS false
+setDontUse DFZTRBN false
+setDontUse DFZTRBS false
+setDontUse DLHN false
+setDontUse DLHRBN false
+setDontUse DLHRBS false
+setDontUse DLHS false
+setDontUse FA1 false
+setDontUse FA1P false
+setDontUse FA1S false
+setDontUse FA2P false
+setDontUse FA2S false
+setDontUse FA3P false
+setDontUse FA3S false
+setDontUse FACS1 false
+setDontUse FACS1P false
+setDontUse FACS2 false
+setDontUse FACS2P false
+setDontUse GCKETN false
+setDontUse GCKETP false
+setDontUse GCKETT false
+setDontUse HA1 false
+setDontUse HA1S false
+setDontUse HA2P false
+setDontUse HA2T false
+setDontUse HA3P false
+setDontUse HA3T false
+setDontUse INV1 false
+setDontUse INV1CK false
+setDontUse INVT1 false
+setDontUse INVT2 false
+setDontUse JKFRBN false
+setDontUse JKFRBP false
+setDontUse JKZRBN false
+setDontUse JKZRBP false
+setDontUse MAO222 false
+setDontUse MAO222S false
+setDontUse MAOI1HT false
+setDontUse MAOI1S false
+setDontUse MOAI1 false
+setDontUse MOAI1H false
+setDontUse MOAI1HP false
+setDontUse MOAI1HT false
+setDontUse MULBE false
+setDontUse MULBEP false
+setDontUse MULPA false
+setDontUse MULPAP false
+setDontUse MUX2 false
+setDontUse MUX2F false
+setDontUse MUX2S false
+setDontUse MUX2T false
+setDontUse MUX3 false
+setDontUse MUX3P false
+setDontUse MUX3S false
+setDontUse MUX4 false
+setDontUse MUX4P false
+setDontUse MUX4S false
+setDontUse MUXB2P false
+setDontUse MUXB2S false
+setDontUse MUXB2T false
+setDontUse MUXB4 false
+setDontUse MUXB4P false
+setDontUse MUXB4S false
+setDontUse MXL2HF false
+setDontUse MXL2HP false
+setDontUse MXL2HT false
+setDontUse MXL3 false
+setDontUse MXL3P false
+setDontUse MXL3S false
+setDontUse ND2P false
+setDontUse ND2S false
+setDontUse ND3HT false
+setDontUse ND3P false
+setDontUse ND3S false
+setDontUse ND4 false
+setDontUse ND4S false
+setDontUse NR2 false
+setDontUse NR2T false
+setDontUse NR3H false
+setDontUse NR3HP false
+setDontUse NR3HT false
+setDontUse NR4 false
+setDontUse NR4P false
+setDontUse NR4S false
+setDontUse OA112 false
+setDontUse OA112S false
+setDontUse OA12 false
+setDontUse OA12S false
+setDontUse OA13 false
+setDontUse OA13S false
+setDontUse OA22 false
+setDontUse OA222 false
+setDontUse OA222P false
+setDontUse OA222S false
+setDontUse OA22P false
+setDontUse OA22S false
+setDontUse OAI112H false
+setDontUse OAI112HP false
+setDontUse OAI112HT false
+setDontUse OAI12H false
+setDontUse OAI12HP false
+setDontUse OAI12HT false
+setDontUse OAI13HP false
+setDontUse OAI13HS false
+setDontUse OAI13HT false
+setDontUse OAI222H false
+setDontUse OAI222HP false
+setDontUse OAI222HT false
+setDontUse OAI22H false
+setDontUse OAI22HP false
+setDontUse OAI22HT false
+setDontUse OR2B1S false
+setDontUse OR2B1T false
+setDontUse OR2P false
+setDontUse OR2S false
+setDontUse OR2T false
+setDontUse OR3 false
+setDontUse OR3B1 false
+setDontUse OR3B1P false
+setDontUse OR3B1S false
+setDontUse OR3B2 false
+setDontUse OR3B2S false
+setDontUse OR3P false
+setDontUse OR3S false
+setDontUse QDBHN false
+setDontUse QDBHS false
+setDontUse QDFFN false
+setDontUse QDFFRBN false
+setDontUse QDFFRBS false
+setDontUse QDFFS false
+setDontUse QDFZN false
+setDontUse QDFZRBN false
+setDontUse QDFZRBP false
+setDontUse QDFZRBS false
+setDontUse QDFZS false
+setDontUse QDLHN false
+setDontUse QDLHRBN false
+setDontUse QDLHRBS false
+setDontUse QDLHS false
+setDontUse RAM2 false
+setDontUse RAM2S false
+setDontUse RAM3 false
+setDontUse RAM3S false
+setDontUse RAM5 false
+setDontUse RAM5S false
+setDontUse XNR2HP false
+setDontUse XNR2HT false
+setDontUse XNR3 false
+setDontUse XNR3P false
+setDontUse XNR3S false
+setDontUse XNR4 false
+setDontUse XNR4P false
+setDontUse XNR4S false
+setDontUse XOR2HP false
+setDontUse XOR2HT false
+setDontUse XOR3 false
+setDontUse XOR3P false
+setDontUse XOR3S false
+setDontUse XOR4 false
+setDontUse XOR4P false
+setDontUse XOR4S false
+catch { setIlmMode -keepHighFanoutPorts true -loopBack false -keepFlatten true }
+catch { setPlanDesignMode -boundaryPlace true }
+catch { setPlanDesignMode -congAware false }
+catch { setPlanDesignMode -effort medium }
+catch { setPlanDesignMode -fixPlacedMacros false }
+catch { setPlanDesignMode -keepGuide false }
+catch { setPlanDesignMode -noColorize false }
+catch { setPlanDesignMode -useSdpGroup false }
+catch { setVerifyGeometryMode -antenna false }
+catch { setVerifyGeometryMode -area {0 0 0 0} }
+catch { setVerifyGeometryMode -diffCellViol true }
+catch { setVerifyGeometryMode -error 1000 }
+catch { setVerifyGeometryMode -implantCheck true }
+catch { setVerifyGeometryMode -insuffMetalOverlap true }
+catch { setVerifyGeometryMode -maxNonPrefLength -1 }
+catch { setVerifyGeometryMode -maxWidth true }
+catch { setVerifyGeometryMode -mergedMGridCheck true }
+catch { setVerifyGeometryMode -minArea true }
+catch { setVerifyGeometryMode -minHole true }
+catch { setVerifyGeometryMode -minimumCut true }
+catch { setVerifyGeometryMode -minSpacing true }
+catch { setVerifyGeometryMode -minStep true }
+catch { setVerifyGeometryMode -minWidth true }
+catch { setVerifyGeometryMode -offMGrid true }
+catch { setVerifyGeometryMode -offRGrid false }
+catch { setVerifyGeometryMode -overlap true }
+catch { setVerifyGeometryMode -padFillerCellsOverlap true }
+catch { setVerifyGeometryMode -pinInBlkg false }
+catch { setVerifyGeometryMode -regRoutingOnly false }
+catch { setVerifyGeometryMode -routingBlkgPinOverlap true }
+catch { setVerifyGeometryMode -routingCellBlkgOverlap true }
+catch { setVerifyGeometryMode -sameCellViol false }
+catch { setVerifyGeometryMode -sameNet true }
+catch { setVerifyGeometryMode -short true }
+catch { setVerifyGeometryMode -stackedViasOnRegNet false }
+catch { setVerifyGeometryMode -useNonDefaultSpacing false }
+catch { setVerifyGeometryMode -viaEnclosure true }
+catch { setVerifyGeometryMode -wireExt true }
+catch { setDelayCalMode -enable_high_fanout false }
+catch { setDelayCalMode -engine aae }
+catch { setDelayCalMode -ignore_clock_idealness false }
+catch { setDelayCalMode -ignoreNetLoad false }
+catch { setDelayCalMode -SIAware true }
+catch { setTrialRouteMode -handlePreroute true }
+catch { setTrialRouteMode -keepMarkedOptRoutes true }

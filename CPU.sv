@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2017-10-08
 //
-//* Last Modified : Tue 19 Dec 2017 08:40:48 PM CST
+//* Last Modified : Wed Dec 20 15:57:41 2017
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -18,8 +18,6 @@
 
 `include "CPU/core.sv"
 
-`include "wrapper/DM_wrapper.sv"
-`include "wrapper/IM_wrapper.sv"
 `include "wrapper/CPUmem_wrapper.sv"
 `include "wrapper/CPUfetch_wrapper.sv"
 `include "wrapper/Masterready.sv"

@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2017-12-17
 //
-//* Last Modified : Tue 19 Dec 2017 02:56:58 PM CST
+//* Last Modified : Wed Dec 20 15:43:19 2017
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -73,7 +73,7 @@ module  cache_controller #(
     .rst(rst_readycounter)
   );
 
-  always_ff @(posedge clk or rst) begin : state_transfer
+  always_ff @(posedge clk ) begin : state_transfer
     if (rst) cs <= IDLE;
     else cs <= ns;
   end : state_transfer

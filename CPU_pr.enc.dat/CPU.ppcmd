@@ -1,0 +1,537 @@
+# PPCMD 1 
+# sroute -connect { corePin } -layerChangeRange { metal1 metal6 } -blockPinTarget { nearestTarget } -corePinTarget { firstAfterRowEnd } -allowJogging 1 -crossoverViaLayerRange { metal1 metal6 } -allowLayerChange 1 -targetViaLayerRange { metal1 metal6 }
+# 18 
+# 16 
+# 0 
+# 0 
+# 0 
+# 0 
+# SELECTED_OBJECTS 
+# selectWire 1246.2100 661.4300 1248.2100 666.2300 4 {GND}
+# END_SELECTED_OBJECTS 
+# BOX_LIST 
+# END_BOX_LIST 
+# NET_INFO_LIST 
+# END_NET_INFO_LIST 
+# END_PPCMD 1 
+
+# PPCMD 2 
+# addStripe -skip_via_on_wire_shape Noshape -block_ring_top_layer_limit metal5 -max_same_layer_jog_length 2.4 -padcore_ring_bottom_layer_limit metal3 -set_to_set_distance 50 -skip_via_on_pin Standardcell -stacked_via_top_layer metal6 -padcore_ring_top_layer_limit metal5 -spacing 2 -xleft_offset 30 -xright_offset 30 -merge_stripes_value 0.31 -layer metal4 -block_ring_bottom_layer_limit metal3 -width 2 -nets {GND VCC} -stacked_via_bottom_layer metal1 -break_stripes_at_block_rings 1
+# 17 
+# 2 
+# 1 
+# 0 
+# 0 
+# 2 
+# SELECTED_OBJECTS 
+# selectInst {icache/fd0/genblk1[3].da}
+# END_SELECTED_OBJECTS 
+# BOX_LIST 
+# 7230 7080 1313100 1301240 0 
+# 11230 11080 1309100 1297240 0 
+# END_BOX_LIST 
+# NET_INFO_LIST 
+# VCC 2000 4 0 54460 1272200 50000 0 0 
+# GND 2000 4 0 50460 1272200 50000 0 0 
+# END_NET_INFO_LIST 
+# END_PPCMD 2 
+
+# PPCMD 3 
+# addStripe -skip_via_on_wire_shape Noshape -block_ring_top_layer_limit metal6 -max_same_layer_jog_length 2.4 -padcore_ring_bottom_layer_limit metal4 -set_to_set_distance 50 -ybottom_offset 30 -skip_via_on_pin Standardcell -stacked_via_top_layer metal6 -padcore_ring_top_layer_limit metal6 -spacing 2 -merge_stripes_value 0.31 -direction horizontal -layer metal5 -block_ring_bottom_layer_limit metal4 -ytop_offset 30 -width 2 -nets {GND VCC} -stacked_via_bottom_layer metal1 -break_stripes_at_block_rings 1
+# 16 
+# 2 
+# 1 
+# 0 
+# 0 
+# 2 
+# SELECTED_OBJECTS 
+# selectInst {icache/fd0/genblk1[3].da}
+# END_SELECTED_OBJECTS 
+# BOX_LIST 
+# 7230 9080 1313100 1303240 0 
+# 11230 13080 1309100 1299240 0 
+# END_BOX_LIST 
+# NET_INFO_LIST 
+# VCC 2000 5 0 54160 1260240 50000 0 0 
+# GND 2000 5 0 50160 1260240 50000 0 0 
+# END_NET_INFO_LIST 
+# END_PPCMD 3 
+
+# PPCMD 4 
+# sroute -connect { blockPin } -layerChangeRange { metal1 metal6 } -blockPinTarget { nearestTarget } -allowJogging 1 -crossoverViaLayerRange { metal1 metal6 } -allowLayerChange 1 -blockPin useLef -targetViaLayerRange { metal1 metal6 }
+# 15 
+# 16 
+# 0 
+# 0 
+# 0 
+# 0 
+# SELECTED_OBJECTS 
+# selectInst {icache/fd0/genblk1[3].da}
+# END_SELECTED_OBJECTS 
+# BOX_LIST 
+# END_BOX_LIST 
+# NET_INFO_LIST 
+# END_NET_INFO_LIST 
+# END_PPCMD 4 
+
+# PPCMD 5 
+# addRing -skip_via_on_wire_shape Noshape -tl 1 -spacing_bottom .28 -width_left 2 -width_bottom 2 -width_top 2 -left 0 -spacing_top .28 -skip_via_on_pin Standardcell -layer_bottom metal1 -stacked_via_top_layer metal6 -width_right 2 -around selected -jog_distance 0.31 -offset_bottom .56 -bottom 0 -layer_top metal1 -rb 1 -threshold 0.31 -offset_left .56 -spacing_right .28 -spacing_left .28 -type block_rings -offset_right .56 -offset_top .56 -layer_right metal2 -nets {GND VCC} -follow core -stacked_via_bottom_layer metal1 -layer_left metal2
+# 14 
+# 8 
+# 1 
+# 0 
+# 0 
+# 0 
+# SELECTED_OBJECTS 
+# selectInst {icache/fd0/genblk1[3].da}
+# END_SELECTED_OBJECTS 
+# BOX_LIST 
+# END_BOX_LIST 
+# NET_INFO_LIST 
+# VCC 2000 1 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 102915 572460 
+# END_RING_PT_INFO_LIST 
+# VCC 2000 2 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 197600 290270 
+# END_RING_PT_INFO_LIST 
+# GND 2000 1 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 103775 570180 
+# END_RING_PT_INFO_LIST 
+# GND 2000 2 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 195320 291130 
+# END_RING_PT_INFO_LIST 
+# END_NET_INFO_LIST 
+# END_PPCMD 5 
+
+# PPCMD 6 
+# addRing -skip_via_on_wire_shape Noshape -spacing_bottom .28 -width_left 2 -width_bottom 2 -width_top 2 -spacing_top .28 -skip_via_on_pin Standardcell -layer_bottom metal1 -stacked_via_top_layer metal6 -width_right 2 -around selected -jog_distance 0.31 -offset_bottom .56 -bottom 0 -layer_top metal1 -rb 1 -threshold 0.31 -offset_left .56 -spacing_right .28 -lb 1 -spacing_left .28 -type block_rings -offset_right .56 -offset_top .56 -layer_right metal2 -nets {GND VCC} -follow core -stacked_via_bottom_layer metal1 -layer_left metal2
+# 13 
+# 8 
+# 1 
+# 0 
+# 0 
+# 0 
+# SELECTED_OBJECTS 
+# selectInst {icache/fd0/genblk1[2].da}
+# selectInst {dcache/fd0/genblk1[3].da}
+# selectInst {dcache/fd0/genblk1[0].da}
+# END_SELECTED_OBJECTS 
+# BOX_LIST 
+# END_BOX_LIST 
+# NET_INFO_LIST 
+# VCC 2000 1 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 313200 572460 505040 572460 703420 572460 
+# END_RING_PT_INFO_LIST 
+# VCC 2000 2 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 230960 290270 395440 290270 422800 290270 587280 290270 621180 290270 785660 290270 
+# END_RING_PT_INFO_LIST 
+# GND 2000 1 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 313200 570180 505040 570180 703420 570180 
+# END_RING_PT_INFO_LIST 
+# GND 2000 2 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 233240 291130 393160 291130 425080 291130 585000 291130 623460 291130 783380 291130 
+# END_RING_PT_INFO_LIST 
+# END_NET_INFO_LIST 
+# END_PPCMD 6 
+
+# PPCMD 7 
+# addRing -skip_via_on_wire_shape Noshape -spacing_bottom .28 -width_left 2 -width_bottom 2 -width_top 2 -spacing_top .28 -skip_via_on_pin Standardcell -layer_bottom metal1 -stacked_via_top_layer metal6 -width_right 2 -around selected -jog_distance 0.31 -offset_bottom .56 -bottom 0 -layer_top metal1 -rb 1 -threshold 0.31 -offset_left .56 -spacing_right .28 -lb 1 -spacing_left .28 -type block_rings -offset_right .56 -offset_top .56 -layer_right metal2 -nets {GND VCC} -follow core -stacked_via_bottom_layer metal1 -layer_left metal2
+# 12 
+# 8 
+# 1 
+# 0 
+# 0 
+# 0 
+# SELECTED_OBJECTS 
+# selectInst {icache/fd0/genblk1[0].da}
+# END_SELECTED_OBJECTS 
+# BOX_LIST 
+# END_BOX_LIST 
+# NET_INFO_LIST 
+# VCC 2000 1 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 1010960 572460 
+# END_RING_PT_INFO_LIST 
+# VCC 2000 2 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 928720 290270 1093200 290270 
+# END_RING_PT_INFO_LIST 
+# GND 2000 1 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 1010960 570180 
+# END_RING_PT_INFO_LIST 
+# GND 2000 2 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 931000 291130 1090920 291130 
+# END_RING_PT_INFO_LIST 
+# END_NET_INFO_LIST 
+# END_PPCMD 7 
+
+# PPCMD 8 
+# addRing -skip_via_on_wire_shape Noshape -spacing_bottom .28 -width_left 2 -width_bottom 2 -tr 1 -width_top 2 -spacing_top .28 -skip_via_on_pin Standardcell -layer_bottom metal1 -stacked_via_top_layer metal6 -width_right 2 -around selected -jog_distance 0.31 -offset_bottom .56 -bottom 0 -layer_top metal1 -threshold 0.31 -right 0 -offset_left .56 -spacing_right .28 -lb 1 -spacing_left .28 -type block_rings -offset_right .56 -offset_top .56 -layer_right metal2 -nets {GND VCC} -follow core -stacked_via_bottom_layer metal1 -layer_left metal2
+# 11 
+# 8 
+# 1 
+# 0 
+# 0 
+# 0 
+# SELECTED_OBJECTS 
+# selectInst {icache/fd0/genblk1[1].da}
+# END_SELECTED_OBJECTS 
+# BOX_LIST 
+# END_BOX_LIST 
+# NET_INFO_LIST 
+# VCC 2000 1 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 1220330 572460 
+# END_RING_PT_INFO_LIST 
+# VCC 2000 2 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 1126560 290270 
+# END_RING_PT_INFO_LIST 
+# GND 2000 1 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 1219470 570180 
+# END_RING_PT_INFO_LIST 
+# GND 2000 2 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 1128840 291130 
+# END_RING_PT_INFO_LIST 
+# END_NET_INFO_LIST 
+# END_PPCMD 8 
+
+# PPCMD 9 
+# addRing -skip_via_on_wire_shape Noshape -spacing_bottom .28 -width_left 2 -width_bottom 2 -tr 1 -width_top 2 -spacing_top .28 -skip_via_on_pin Standardcell -layer_bottom metal1 -stacked_via_top_layer metal6 -width_right 2 -around selected -jog_distance 0.31 -offset_bottom .56 -layer_top metal1 -br 1 -threshold 0.31 -right 0 -offset_left .56 -spacing_right .28 -spacing_left .28 -type block_rings -offset_right .56 -offset_top .56 -layer_right metal2 -nets {GND VCC} -follow core -stacked_via_bottom_layer metal1 -layer_left metal2
+# 10 
+# 8 
+# 1 
+# 0 
+# 0 
+# 0 
+# SELECTED_OBJECTS 
+# selectInst {icache/TA0}
+# END_SELECTED_OBJECTS 
+# BOX_LIST 
+# END_BOX_LIST 
+# NET_INFO_LIST 
+# VCC 2000 1 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 1102810 663050 1102810 827530 
+# END_RING_PT_INFO_LIST 
+# VCC 2000 2 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 891520 745290 
+# END_RING_PT_INFO_LIST 
+# GND 2000 1 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 1101950 665330 1101950 825250 
+# END_RING_PT_INFO_LIST 
+# GND 2000 2 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 893800 745290 
+# END_RING_PT_INFO_LIST 
+# END_NET_INFO_LIST 
+# END_PPCMD 9 
+
+# PPCMD 10 
+# addRing -skip_via_on_wire_shape Noshape -lt 1 -spacing_bottom .28 -width_left 2 -width_bottom 2 -width_top 2 -top 0 -spacing_top .28 -skip_via_on_pin Standardcell -layer_bottom metal1 -stacked_via_top_layer metal6 -width_right 2 -around selected -jog_distance 0.31 -offset_bottom .56 -layer_top metal1 -threshold 0.31 -offset_left .56 -spacing_right .28 -spacing_left .28 -type block_rings -offset_right .56 -rt 1 -offset_top .56 -layer_right metal2 -nets {GND VCC} -follow core -stacked_via_bottom_layer metal1 -layer_left metal2
+# 9 
+# 8 
+# 1 
+# 0 
+# 0 
+# 0 
+# SELECTED_OBJECTS 
+# selectInst {dcache/TA0}
+# END_SELECTED_OBJECTS 
+# BOX_LIST 
+# END_BOX_LIST 
+# NET_INFO_LIST 
+# VCC 2000 1 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 802000 878800 
+# END_RING_PT_INFO_LIST 
+# VCC 2000 2 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 719760 1090520 884240 1090520 
+# END_RING_PT_INFO_LIST 
+# GND 2000 1 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 802000 881080 
+# END_RING_PT_INFO_LIST 
+# GND 2000 2 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 722040 1089660 881960 1089660 
+# END_RING_PT_INFO_LIST 
+# END_NET_INFO_LIST 
+# END_PPCMD 10 
+
+# PPCMD 11 
+# addRing -skip_via_on_wire_shape Noshape -lt 1 -spacing_bottom .28 -width_left 2 -width_bottom 2 -width_top 2 -top 0 -spacing_top .28 -skip_via_on_pin Standardcell -layer_bottom metal1 -stacked_via_top_layer metal6 -width_right 2 -around selected -jog_distance 0.31 -offset_bottom .56 -layer_top metal1 -threshold 0.31 -offset_left .56 -spacing_right .28 -spacing_left .28 -type block_rings -offset_right .56 -rt 1 -offset_top .56 -layer_right metal2 -nets {GND VCC} -follow core -stacked_via_bottom_layer metal1 -layer_left metal2
+# 8 
+# 8 
+# 1 
+# 0 
+# 0 
+# 0 
+# SELECTED_OBJECTS 
+# selectInst {dcache/fd0/genblk1[2].da}
+# END_SELECTED_OBJECTS 
+# BOX_LIST 
+# END_BOX_LIST 
+# NET_INFO_LIST 
+# VCC 2000 1 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 311700 737940 
+# END_RING_PT_INFO_LIST 
+# VCC 2000 2 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 229460 1020090 393940 1020090 
+# END_RING_PT_INFO_LIST 
+# GND 2000 1 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 311700 740220 
+# END_RING_PT_INFO_LIST 
+# GND 2000 2 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 231740 1019230 391660 1019230 
+# END_RING_PT_INFO_LIST 
+# END_NET_INFO_LIST 
+# END_PPCMD 11 
+
+# PPCMD 12 
+# addRing -skip_via_on_wire_shape Noshape -spacing_bottom .28 -width_left 2 -width_bottom 2 -width_top 2 -left 0 -top 0 -spacing_top .28 -skip_via_on_pin Standardcell -layer_bottom metal1 -stacked_via_top_layer metal6 -width_right 2 -around selected -jog_distance 0.31 -offset_bottom .56 -bl 1 -layer_top metal1 -threshold 0.31 -offset_left .56 -spacing_right .28 -spacing_left .28 -type block_rings -offset_right .56 -rt 1 -offset_top .56 -layer_right metal2 -nets {GND VCC} -follow core -stacked_via_bottom_layer metal1 -layer_left metal2
+# 7 
+# 8 
+# 1 
+# 0 
+# 0 
+# 0 
+# SELECTED_OBJECTS 
+# selectInst {dcache/fd0/genblk1[1].da}
+# END_SELECTED_OBJECTS 
+# BOX_LIST 
+# END_BOX_LIST 
+# NET_INFO_LIST 
+# VCC 2000 1 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 102165 737940 
+# END_RING_PT_INFO_LIST 
+# VCC 2000 2 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 196100 1020090 
+# END_RING_PT_INFO_LIST 
+# GND 2000 1 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 103025 740220 
+# END_RING_PT_INFO_LIST 
+# GND 2000 2 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 193820 1019230 
+# END_RING_PT_INFO_LIST 
+# END_NET_INFO_LIST 
+# END_PPCMD 12 
+
+# PPCMD 13 
+# addRing -skip_via_on_wire_shape Noshape -tl 1 -spacing_bottom .28 -width_left 2 -width_bottom 2 -width_top 2 -left 0 -spacing_top .28 -skip_via_on_pin Standardcell -layer_bottom metal1 -stacked_via_top_layer metal6 -width_right 2 -around selected -jog_distance 0.31 -offset_bottom .56 -bl 1 -layer_top metal1 -threshold 0.31 -offset_left .56 -spacing_right .28 -spacing_left .28 -type block_rings -offset_right .56 -offset_top .56 -layer_right metal2 -nets {GND VCC} -follow core -stacked_via_bottom_layer metal1 -layer_left metal2
+# 6 
+# 8 
+# 1 
+# 0 
+# 0 
+# 0 
+# SELECTED_OBJECTS 
+# selectInst {dcache/fd0/genblk1[1].da}
+# END_SELECTED_OBJECTS 
+# BOX_LIST 
+# END_BOX_LIST 
+# NET_INFO_LIST 
+# VCC 2000 1 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 102165 737940 102165 1277580 
+# END_RING_PT_INFO_LIST 
+# VCC 2000 2 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 196100 1007760 
+# END_RING_PT_INFO_LIST 
+# GND 2000 1 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 103025 740220 103025 1275300 
+# END_RING_PT_INFO_LIST 
+# GND 2000 2 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 193820 1007760 
+# END_RING_PT_INFO_LIST 
+# END_NET_INFO_LIST 
+# END_PPCMD 13 
+
+# PPCMD 14 
+# addRing -skip_via_on_wire_shape Noshape -spacing_bottom .28 -width_left 2 -width_bottom 2 -width_top 2 -left 0 -top 0 -spacing_top .28 -skip_via_on_pin Standardcell -layer_bottom metal1 -stacked_via_top_layer metal6 -width_right 2 -around selected -jog_distance 0.31 -offset_bottom .56 -bl 1 -layer_top metal1 -threshold 0.31 -offset_left .56 -spacing_right .28 -spacing_left .28 -type block_rings -offset_right .56 -rt 1 -offset_top .56 -layer_right metal2 -nets {GND VCC} -follow core -stacked_via_bottom_layer metal1 -layer_left metal2
+# 5 
+# 8 
+# 1 
+# 0 
+# 0 
+# 0 
+# SELECTED_OBJECTS 
+# selectInst {dcache/fd0/genblk1[1].da}
+# END_SELECTED_OBJECTS 
+# BOX_LIST 
+# END_BOX_LIST 
+# NET_INFO_LIST 
+# VCC 2000 1 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 102165 737940 
+# END_RING_PT_INFO_LIST 
+# VCC 2000 2 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 196100 1020090 
+# END_RING_PT_INFO_LIST 
+# GND 2000 1 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 103025 740220 
+# END_RING_PT_INFO_LIST 
+# GND 2000 2 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 193820 1019230 
+# END_RING_PT_INFO_LIST 
+# END_NET_INFO_LIST 
+# END_PPCMD 14 
+
+# PPCMD 15 
+# addRing -skip_via_on_wire_shape Noshape -spacing_bottom .28 -width_left 2 -width_bottom 2 -width_top 2 -left 0 -top 0 -spacing_top .28 -skip_via_on_pin Standardcell -layer_bottom metal1 -stacked_via_top_layer metal6 -width_right 2 -around selected -jog_distance 0.31 -offset_bottom .56 -bl 1 -layer_top metal1 -threshold 0.31 -offset_left .56 -spacing_right .28 -spacing_left .28 -type block_rings -offset_right .56 -rt 1 -offset_top .56 -layer_right metal2 -nets {GND VCC} -follow core -stacked_via_bottom_layer metal1 -layer_left metal2
+# 4 
+# 8 
+# 1 
+# 0 
+# 0 
+# 0 
+# SELECTED_OBJECTS 
+# selectInst {dcache/fd0/genblk1[1].da}
+# END_SELECTED_OBJECTS 
+# BOX_LIST 
+# END_BOX_LIST 
+# NET_INFO_LIST 
+# VCC 2000 1 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 102165 737940 
+# END_RING_PT_INFO_LIST 
+# VCC 2000 2 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 196100 1020090 
+# END_RING_PT_INFO_LIST 
+# GND 2000 1 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 103025 740220 
+# END_RING_PT_INFO_LIST 
+# GND 2000 2 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 193820 1019230 
+# END_RING_PT_INFO_LIST 
+# END_NET_INFO_LIST 
+# END_PPCMD 15 
+
+# PPCMD 16 
+# addRing -skip_via_on_wire_shape Noshape -spacing_bottom .28 -width_left 2 -width_bottom 2 -width_top 2 -left 0 -top 0 -spacing_top .28 -skip_via_on_pin Standardcell -layer_bottom metal1 -stacked_via_top_layer metal6 -width_right 2 -around selected -jog_distance 0.31 -offset_bottom .56 -bl 1 -layer_top metal1 -threshold 0.31 -offset_left .56 -spacing_right .28 -spacing_left .28 -type block_rings -offset_right .56 -rt 1 -offset_top .56 -layer_right metal2 -nets {GND VCC} -follow core -stacked_via_bottom_layer metal1 -layer_left metal2
+# 3 
+# 8 
+# 1 
+# 0 
+# 0 
+# 0 
+# SELECTED_OBJECTS 
+# selectInst {dcache/fd0/genblk1[1].da}
+# END_SELECTED_OBJECTS 
+# BOX_LIST 
+# END_BOX_LIST 
+# NET_INFO_LIST 
+# VCC 2000 1 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 102165 737940 
+# END_RING_PT_INFO_LIST 
+# VCC 2000 2 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 196100 1020090 
+# END_RING_PT_INFO_LIST 
+# GND 2000 1 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 103025 740220 
+# END_RING_PT_INFO_LIST 
+# GND 2000 2 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 193820 1019230 
+# END_RING_PT_INFO_LIST 
+# END_NET_INFO_LIST 
+# END_PPCMD 16 
+
+# PPCMD 17 
+# addRing -skip_via_on_wire_shape Noshape -spacing_bottom .28 -width_left 2 -width_bottom 2 -width_top 2 -left 0 -top 0 -spacing_top .28 -skip_via_on_pin Standardcell -layer_bottom metal1 -stacked_via_top_layer metal6 -width_right 2 -around selected -jog_distance 0.31 -offset_bottom .56 -bl 1 -layer_top metal1 -threshold 0.31 -offset_left .56 -spacing_right .28 -spacing_left .28 -type block_rings -offset_right .56 -rt 1 -offset_top .56 -layer_right metal2 -nets {GND VCC} -follow core -stacked_via_bottom_layer metal1 -layer_left metal2
+# 2 
+# 8 
+# 1 
+# 0 
+# 0 
+# 0 
+# SELECTED_OBJECTS 
+# selectInst {dcache/fd0/genblk1[1].da}
+# END_SELECTED_OBJECTS 
+# BOX_LIST 
+# END_BOX_LIST 
+# NET_INFO_LIST 
+# VCC 2000 1 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 102165 737940 
+# END_RING_PT_INFO_LIST 
+# VCC 2000 2 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 196100 1020090 
+# END_RING_PT_INFO_LIST 
+# GND 2000 1 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 103025 740220 
+# END_RING_PT_INFO_LIST 
+# GND 2000 2 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 193820 1019230 
+# END_RING_PT_INFO_LIST 
+# END_NET_INFO_LIST 
+# END_PPCMD 17 
+
+# PPCMD 18 
+# addRing -skip_via_on_wire_shape Noshape -spacing_bottom 2 -width_left 2 -width_bottom 2 -width_top 2 -spacing_top 2 -skip_via_on_pin Standardcell -layer_bottom metal5 -center 1 -stacked_via_top_layer metal6 -width_right 2 -type core_rings -jog_distance 0.31 -offset_bottom 0.31 -layer_top metal5 -threshold 0.31 -offset_left 0.31 -spacing_right 2 -spacing_left 2 -offset_right 0.31 -offset_top .56 -layer_right metal4 -nets {GND VCC} -follow core -stacked_via_bottom_layer metal1 -layer_left metal4
+# 1 
+# 32 
+# 1 
+# 0 
+# 0 
+# 0 
+# BOX_LIST 
+# END_BOX_LIST 
+# NET_INFO_LIST 
+# VCC 2000 5 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 661165 8080 661165 1302240 
+# END_RING_PT_INFO_LIST 
+# VCC 2000 4 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 8230 655160 1314100 655160 
+# END_RING_PT_INFO_LIST 
+# GND 2000 5 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 661165 12080 661165 1298240 
+# END_RING_PT_INFO_LIST 
+# GND 2000 4 1 0 0 0 0 0 
+# RING_PT_INFO_LIST 
+# 12230 655160 1310100 655160 
+# END_RING_PT_INFO_LIST 
+# END_NET_INFO_LIST 
+# END_PPCMD 18 
+

@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2017-11-05
 //
-//* Last Modified : Tue 19 Dec 2017 08:39:04 PM CST
+//* Last Modified : Wed Dec 20 15:59:47 2017
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -28,6 +28,10 @@
 // `include "CPU/regfile.sv"
 // `include "CPU/alu.sv"
 // `include "CPU.sv"
+
+
+`include "wrapper/DM_wrapper.sv"
+`include "wrapper/IM_wrapper.sv"
 
 `include "AHB/Arbiter.sv"
 `include "AHB/Decoder.sv"
@@ -99,7 +103,7 @@ module top(
   logic HSEL_S2;
   logic [`AHB_BURST_BITS - 1 : 0] HBURST;
 
-  CPU CPU0(
+  CPU CPU1(
     .clk(clk),
     .rst(rst),
     .HADDR_M1(HADDR_M1),
