@@ -7,7 +7,7 @@
 
 * Creation Date : 2017-10-01
 
-* Last Modified : Thu 23 Nov 2017 09:36:30 PM CST
+* Last Modified : Mon 01 Jan 2018 02:38:31 AM CST
 
 * Created By :  Ji-Ying, Li
 
@@ -22,7 +22,8 @@ module alu_controller #(
   parameter OPCODEWIDTH = 7
 )
 (
-  output logic [ALUOPWIDTH - 1 : 0]  aluop,
+  // output logic [ALUOPWIDTH - 1 : 0]  aluop,
+  output  enum logic [ALUOPWIDTH - 1 : 0] {ADD, SUB, SLL, SLT, SLTU, XOR, SRL, OR, AND, SRA}aluop,
   input [FUNCT3WIDTH - 1 : 0] func3,
   input [FUNCT7WIDTH - 1 : 0] func7,
   input [OPCODEWIDTH - 1 : 0] op
@@ -34,45 +35,45 @@ module alu_controller #(
       case (func3)
         `FUNCT3_ADD: begin
           if((op == `RTYPE) && (func7 == 7'b0100000/* func7[5] == 1'b1 suck nLint*/)) begin
-            aluop = `SUB;
+            aluop = SUB;
           end
           else begin
-            aluop = `ADD;
+            aluop = ADD;
           end
         end
         `FUNCT3_SLL: begin
-          aluop = `SLL;
+          aluop = SLL;
         end
         `FUNCT3_SLT: begin
-          aluop = `SLT;
+          aluop = SLT;
         end
         `FUNCT3_SLTU: begin
-          aluop = `SLTU;
+          aluop = SLTU;
         end
         `FUNCT3_XOR: begin
-          aluop = `XOR;
+          aluop = XOR;
         end
         `FUNCT3_SRL: begin
           if ((func7 == 7'b0100000)) begin
-            aluop = `SRA;
+            aluop = SRA;
           end
           else begin
-            aluop = `SRL;
+            aluop = SRL;
           end
         end
         `FUNCT3_OR: begin
-          aluop = `OR;
+          aluop = OR;
         end
         `FUNCT3_AND: begin
-          aluop = `AND;
+          aluop = AND;
         end
         default: begin
-          aluop = `ADD;
+          aluop = ADD;
         end
       endcase
     end
     else begin
-      aluop = `ADD;
+      aluop = ADD;
     end
   end :alu_ctrl
   

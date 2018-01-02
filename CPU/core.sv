@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2017-12-19
 //
-//* Last Modified : Tue 19 Dec 2017 08:36:36 PM CST
+//* Last Modified : Mon 01 Jan 2018 02:02:27 AM CST
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -70,7 +70,9 @@ module core #(
   //===================================================
   
   logic pc_sel, rf_write_global, pc_stall;
-  logic [CUTSETWIDTH - 1 : 0] cutset_sel_IFID, cutset_sel_IDEX, cutset_sel_EXMEM, cutset_sel_MEMWB;
+  typedef enum logic [CUTSETWIDTH - 1 : 0] {FLUSH, STALL, PUSH} cutsetState;
+  // logic [CUTSETWIDTH - 1 : 0] cutset_sel_IFID, cutset_sel_IDEX, cutset_sel_EXMEM, cutset_sel_MEMWB;
+  cutsetState cutset_sel_IFID, cutset_sel_IDEX, cutset_sel_EXMEM, cutset_sel_MEMWB;
   logic [PCWIDTH - 1 : 0] pcplusimm;
   logic [REGADDRWIDTH - 1 : 0] rd_addr_global;
   logic [REGWIDTH - 1 : 0] wbdata;
@@ -81,7 +83,7 @@ module core #(
   logic [FORWARDSELWIDTH - 1 : 0] sel_forwardA_ID, sel_forwardB_ID;
   
   //data hazard 
-  logic  hazard_nop_sel;
+  enum logic [1:0] {HAZARDSELEMP, HAZARDSELNORMAL} hazard_nop_sel;
 
   assign IM_enable = 1'b1;
   

@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2017-10-01
 //
-//* Last Modified : Fri 24 Nov 2017 03:08:46 PM CST
+//* Last Modified : Mon 01 Jan 2018 02:41:19 AM CST
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -24,12 +24,12 @@ module alu #(
 
   input logic [SRCWIDTH - 1 : 0] src1,
   input logic [SRCWIDTH - 1 : 0]src2,
-  input logic [ALUOPWIDTH - 1 : 0] aluop
+  input enum logic [ALUOPWIDTH - 1 : 0] {ADD, SUB, SLL, SLT, SLTU, XOR, SRL, OR, AND, SRA}aluop
 );
 
   always_comb begin : alu_comb
     case (aluop)
-      `ADD: begin
+      ADD: begin
         result = src1 + src2;
         if (((result[SRCWIDTH-1] == 1) && (src1[SRCWIDTH-1] == 0) && (src2[SRCWIDTH-1] == 0)) || ((result[SRCWIDTH-1] == 0) && (src1[SRCWIDTH-1] == 1) && (src2[SRCWIDTH-1] == 1)))begin
           overflow = 1'b1;
@@ -38,7 +38,7 @@ module alu #(
           overflow = 1'b0;
         end 
       end
-      `SUB: begin
+      SUB: begin
         result = src1 - src2;
         if ((result[SRCWIDTH-1] == 1 && src1[SRCWIDTH-1] == 0 && src2[SRCWIDTH-1] == 1) || result[SRCWIDTH-1] == 0 && src1[SRCWIDTH-1] == 1 && src2[SRCWIDTH-1] == 0) begin
           overflow = 1'b1;
@@ -47,35 +47,35 @@ module alu #(
           overflow = 1'b0;
         end
       end
-      `SLL: begin
+      SLL: begin
         result   = src1 << src2[4:0];
         overflow = 1'b0;
       end
-      `SLT: begin
+      SLT: begin
         result   = ($signed(src1) < $signed(src2))? 1'b1:1'b0;
         overflow = 1'b0;
       end
-      `SLTU: begin
+      SLTU: begin
         result   = (src1 < src2)? 1'b1:1'b0;
         overflow = 1'b0;
       end
-      `XOR: begin
+      XOR: begin
         result   = src1 ^ src2;
         overflow = 1'b0;
       end
-      `SRL: begin
+      SRL: begin
         result   = src1 >> src2[4:0];
         overflow = 1'b0;
       end
-      `SRA: begin
+      SRA: begin
         result   = $signed(src1) >>> src2[4:0];
         overflow = 1'b0;
       end
-      `OR:  begin
+      OR:  begin
         result   = src1 | src2;
         overflow = 1'b0;
       end
-      `AND: begin
+      AND: begin
         result   = src1 & src2;
         overflow = 1'b0;
       end

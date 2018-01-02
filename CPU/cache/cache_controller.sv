@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2017-12-17
 //
-//* Last Modified : Wed Dec 20 15:43:19 2017
+//* Last Modified : Mon 01 Jan 2018 03:35:58 AM CST
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -31,6 +31,7 @@ module  cache_controller #(
   output logic cs_tag,
   output logic oe_tag,
   output logic web_tag,
+  output logic datain_valid,
   output logic cs_valid,
   output logic oe_valid,
   output logic web_valid,
@@ -117,16 +118,16 @@ module  cache_controller #(
       IDLE: begin
         rst_readycounter = 1'b1;
 
-        sel_dataarray_in = Pstrobe & (Prw == `PWRITE); //1 for Pdata
+        sel_dataarray_in = (Pstrobe & (Prw == `PWRITE)); //1 for Pdata
         sysdataOE        = 1'b0;
         pdataOE          = 1'b1;
 
         web_tag          = 1'b1;
-        cs_tag           = 1'b0;
+        cs_tag           = 1'b1;
         web_valid        = 1'b1;
-        cs_valid         = 1'b0;
+        cs_valid         = 1'b1;
 
-        SYSstrobe        = (Pstrobe & (Prw == `PWRITE)) | (Pstrobe&(isHit == `READMISS));
+        SYSstrobe        = ((Pstrobe & (Prw == `PWRITE))) | (Pstrobe&(isHit == `READMISS)); // write or read miss
         SYSrw            = 1'b0; //0 for read
 
         cs_data          = 1'b1;
@@ -137,6 +138,7 @@ module  cache_controller #(
                            (block_offset == 2'b0)?     4'b0001:
                            (block_offset == 2'b1)?     4'b0010:
                            (block_offset == 2'd2)?     4'b0100:4'b1000;
+        datain_valid     = 1'b1;
       end 
       READMEM: begin
         rst_readycounter = 1'b0;
@@ -160,6 +162,7 @@ module  cache_controller #(
         sel_dataunit_in  = (ready3t[2])? {SYSready, 3'b0}:
                            (ready3t[1])? {1'b0, SYSready, 2'b0}:
                            (ready3t[0])? {2'b0, SYSready, 1'b0}: {3'b0, SYSready};
+        datain_valid     = 1'b1;
       end
       WRITEMEM: begin
         rst_readycounter = 1'b1;
@@ -169,9 +172,17 @@ module  cache_controller #(
         pdataOE          = 1'b0;
 
         web_tag          = 1'b1;
-        cs_tag           = 1'b0;
-        web_valid        = 1'b1;
-        cs_valid         = 1'b0;
+        cs_tag           = 1'b1;
+
+        if (isHit) begin
+          web_valid        = 1'b1;
+          datain_valid     = 1'b1;
+        end
+        else begin
+          web_valid        = 1'b0;
+          datain_valid     = 1'b0;
+        end
+        cs_valid         = 1'b1;
 
         SYSstrobe        = 1'b1;
         SYSrw            = 1'b1; //1 for write
@@ -204,6 +215,7 @@ module  cache_controller #(
         web_data         = store_type;
         Pready           = 1'b1;  
         sel_dataunit_in = 4'b0000;
+        datain_valid     = 1'b1;
         
       end
       default: begin
@@ -225,6 +237,7 @@ module  cache_controller #(
         web_data         = store_type;
         Pready           = isHit == `READHIT;  
         sel_dataunit_in = 4'b0000;
+        datain_valid     = 1'b1;
       end
     endcase
   end : FSM_comb

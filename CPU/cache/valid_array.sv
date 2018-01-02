@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2017-12-17
 //
-//* Last Modified : Tue 19 Dec 2017 01:08:05 AM CST
+//* Last Modified : Mon 01 Jan 2018 03:35:58 AM CST
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -19,6 +19,7 @@ module  valid_array #(
   parameter VALIDARRAYSIZE = 64
 )(
   output logic valid_data,
+  input datain_valid,
   input web_valid,
   input cs_valid,
   input oe_valid,
@@ -39,8 +40,8 @@ module  valid_array #(
       vdata = 'b0;
     end
     else begin
-      if (cs_valid == 1'b1 && ~web_valid ) begin
-        vdata[addr_index] = ~web_valid;
+      if (cs_valid == 1'b1 && ~web_valid) begin
+        vdata[addr_index] = datain_valid;
       end
     end
   end : write

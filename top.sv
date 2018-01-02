@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2017-11-05
 //
-//* Last Modified : Wed Dec 20 15:59:47 2017
+//* Last Modified : Mon 01 Jan 2018 01:05:01 AM CST
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -277,9 +277,9 @@ module top(
     else
       $error("%8d | Slave2 responds ERROR.\n", $time);
     // // Default Slave
-    DefaultSlave_respones: assert property(default_slave_resp(HSEL_S1, HSEL_S2, HTRANS, HRESP, (~HRESETn)))
-    else
-      $error("%8d | Default slave responds ERROR.\n", $time);
+    // DefaultSlave_respones: assert property(default_slave_resp(HSEL_S1, HSEL_S2, HTRANS, HRESP, (~HRESETn)))
+    // else
+    //   $error("%8d | Default slave responds ERROR.\n", $time);
 
   //=================================//
   //    SystemVerilog Assertions     //

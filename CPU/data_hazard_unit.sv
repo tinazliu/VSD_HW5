@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2017-11-23
 //
-//* Last Modified : Tue 19 Dec 2017 02:44:46 PM CST
+//* Last Modified : Mon 01 Jan 2018 02:02:42 AM CST
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -18,7 +18,7 @@
 module data_hazard_unit #(
   parameter REGADDRWIDTH = 5
 )(
-  output logic hazard_nop_sel,
+  output enum logic[1:0] {HAZARDSELEMP, HAZARDSELNORMAL} hazard_nop_sel,
   input DM_en_EX,
   input DM_write_EX,
   input DM_write_MEM,

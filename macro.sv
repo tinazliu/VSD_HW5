@@ -7,7 +7,7 @@
 
 * Creation Date : 2017-09-28
 
-* Last Modified : Mon 18 Dec 2017 01:55:11 PM CST
+* Last Modified : Mon 01 Jan 2018 02:00:48 AM CST
 
 * Created By :  Ji-Ying, Li
 
@@ -84,9 +84,13 @@
 
 //cut set control
 
-`define CUTSETPUSH  2'b00
-`define CUTSETFLUSH 2'b01
-`define CUTSETSTALL 2'b10
+// `define CUTSETPUSH  2'b00
+// `define CUTSETFLUSH 2'b01
+// `define CUTSETSTALL 2'b10
+
+`define CUTSETPUSH  PUSH
+`define CUTSETFLUSH FLUSH
+`define CUTSETSTALL STALL
 
 // alu forward src
 `define FORWARDORI  2'b00
@@ -94,8 +98,8 @@
 `define FORWARDWB   2'b10
 
 // data hazard empty signal sel
-`define HAZARDSELEMP 1'b0
-`define HAZARDSELNORMAL 1'b1
+`define HAZARDSELEMP HAZARDSELEMP
+`define HAZARDSELNORMAL HAZARDSELNORMAL
 
 // src of  pc + imm/rs1
 `define PCADDIMM 1'b0

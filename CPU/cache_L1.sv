@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2017-12-16
 //
-//* Last Modified : Tue 19 Dec 2017 02:53:32 PM CST
+//* Last Modified : Mon 01 Jan 2018 03:37:04 AM CST
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -87,6 +87,7 @@ module cache_L1 #(
     .valid_data(valid_data),
     .clk(clk),
     .rst(rst),
+    .datain_valid(datain_valid),
     .web_valid(web_valid),
     .oe_valid(oe_valid),
     .cs_valid(cs_valid)
@@ -113,6 +114,7 @@ module cache_L1 #(
     .cs_valid(cs_valid),
     .oe_valid(oe_valid),
     .web_valid(web_valid),
+    .datain_valid(datain_valid),
     .cs_data(cs_data),
     .oe_data(oe_data),
     .web_data(web_data),
