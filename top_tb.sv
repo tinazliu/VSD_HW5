@@ -170,7 +170,9 @@ module top_tb;
     `elsif prog1
       $readmemh("./prog1/ROM_data.dat",ROM1.mem_data);
       $readmemh("./prog1/IM_data.dat",IM1.mem_data);
-      $readmemh("./prog1/DM_data.dat",DM1.mem_data);    
+      $readmemh("./prog1/DM_data.dat",DM1.mem_data);
+      for (i=0; i<2048; i++)
+        DRAM1.mem_data[i] = 32'h0000_0013;      
       $readmemh("./prog1/DRAM_isr.dat",DRAM1.mem_data,0);
       $readmemh("./prog1/DRAM_main.dat",DRAM1.mem_data,1024);
       $readmemh("./prog1/Sensor_data.dat", sensor_mem);

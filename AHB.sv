@@ -5,6 +5,11 @@
 // Version:     1.0
 //================================================
 
+// `include "AHB/Arbiter.sv"
+// `include "AHB/Decoder.sv"
+// `include "AHB/MuxM2S.sv"
+// `include "AHB/MuxS2M.sv"
+// `include "AHB/DefaultSlave.sv"
 
 module AHB(
   input HCLK,
@@ -25,6 +30,10 @@ module AHB(
   input [`AHB_DATA_BITS-1:0] HWDATA_M2,
   input HBUSREQ_M2,
   input HLOCK_M2,
+  // S0 inputs
+  input [`AHB_DATA_BITS-1:0] HRDATA_S0,
+  input HREADY_S0,
+  input [`AHB_RESP_BITS-1:0] HRESP_S0,
   // S1 inputs
   input [`AHB_DATA_BITS-1:0] HRDATA_S1,
   input HREADY_S1,
@@ -33,6 +42,14 @@ module AHB(
   input [`AHB_DATA_BITS-1:0] HRDATA_S2,
   input HREADY_S2,
   input [`AHB_RESP_BITS-1:0] HRESP_S2,
+  // S3 inputs
+  input [`AHB_DATA_BITS-1:0] HRDATA_S3,
+  input HREADY_S3,
+  input [`AHB_RESP_BITS-1:0] HRESP_S3,
+  // S4 inputs
+  input [`AHB_DATA_BITS-1:0] HRDATA_S4,
+  input HREADY_S4,
+  input [`AHB_RESP_BITS-1:0] HRESP_S4,
   // Master outputs
   output [`AHB_DATA_BITS-1:0] HRDATA,
   output HREADY,
@@ -47,8 +64,11 @@ module AHB(
   output [`AHB_DATA_BITS-1:0] HWDATA,
   output [`AHB_MASTER_BITS-1:0] HMASTER,
   output HMASTLOCK,
+  output HSEL_S0,
   output HSEL_S1,
-  output HSEL_S2
+  output HSEL_S2,
+  output HSEL_S3,
+  output HSEL_S4
 );
 
   //Default Slave             
@@ -84,8 +104,11 @@ module AHB(
   Decoder uDecoder(
     .HADDR(HADDR),
     .HSELDefault(HSELDefault), // DefaultSlave
+    .HSEL_S0(HSEL_S0), // S0
     .HSEL_S1(HSEL_S1), // S1
-    .HSEL_S2(HSEL_S2) // S2
+    .HSEL_S2(HSEL_S2), // S2
+    .HSEL_S3(HSEL_S3), // S3
+    .HSEL_S4(HSEL_S4)  // S4
   );
 
   MuxM2S uMuxM2S(
@@ -118,8 +141,15 @@ module AHB(
     .HRESETn(HRESETn),
 
     .HSELDefault(HSELDefault), // DefaultSlave
+    .HSEL_S0(HSEL_S0), // S0
     .HSEL_S1(HSEL_S1), // S1
     .HSEL_S2(HSEL_S2), // S2
+    .HSEL_S3(HSEL_S3), // S3
+    .HSEL_S4(HSEL_S4), // S4
+
+    .HRDATA_S0(HRDATA_S0),
+    .HREADY_S0(HREADY_S0),
+    .HRESP_S0(HRESP_S0),
 
     .HRDATA_S1(HRDATA_S1),
     .HREADY_S1(HREADY_S1),
@@ -128,6 +158,14 @@ module AHB(
     .HRDATA_S2(HRDATA_S2),
     .HREADY_S2(HREADY_S2),
     .HRESP_S2(HRESP_S2),
+
+    .HRDATA_S3(HRDATA_S3),
+    .HREADY_S3(HREADY_S3),
+    .HRESP_S3(HRESP_S3),
+
+    .HRDATA_S4(HRDATA_S4),
+    .HREADY_S4(HREADY_S4),
+    .HRESP_S4(HRESP_S4),
 
     .HREADYDefault(HREADYDefault),
     .HRESPDefault(HRESPDefault),

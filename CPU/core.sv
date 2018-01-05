@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2017-12-19
 //
-//* Last Modified : Mon 01 Jan 2018 02:02:27 AM CST
+//* Last Modified : Fri 05 Jan 2018 03:27:29 PM CST
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -59,6 +59,7 @@ module core #(
   output logic [PCWIDTH - 1 : 0]  DM_address,
   input logic [REGWIDTH - 1 : 0] IM_out,
   input logic [REGWIDTH - 1 : 0] DM_out,
+  input sensor1_interupt,
   input stall,
   input clk,
   input rst

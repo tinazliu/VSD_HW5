@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2017-12-17
 //
-//* Last Modified : Mon 01 Jan 2018 03:35:58 AM CST
+//* Last Modified : Fri 05 Jan 2018 03:07:57 PM CST
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -45,6 +45,7 @@ module  cache_controller #(
   output logic sel_dataarray_in,
   output logic [SELINPUTWIDTH - 1 : 0] sel_dataunit_in,
   output logic [SELOUTPUTWIDTH - 1 : 0] sel_dataunit_out,
+  output logic isIDLE,
 
   input Pstrobe,
   input Prw,
@@ -111,6 +112,7 @@ module  cache_controller #(
     oe_tag   = Pstrobe ;
     oe_valid = Pstrobe ;
     sel_dataunit_out = (block_offset);
+    isIDLE = (cs == IDLE)? 1'b1: 1'b0;
   end : hit_decision
 
   always_comb begin : FSM_comb

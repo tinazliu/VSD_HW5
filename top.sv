@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2017-11-05
 //
-//* Last Modified : Mon 01 Jan 2018 01:05:01 AM CST
+//* Last Modified : Fri 05 Jan 2018 03:22:24 PM CST
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -32,6 +32,11 @@
 
 `include "wrapper/DM_wrapper.sv"
 `include "wrapper/IM_wrapper.sv"
+`include "wrapper/ROM_wrapper.sv"
+`include "wrapper/DRAM_wrapper.sv"
+`include "wrapper/SENSOR_wrapper.sv"
+
+`include "sensor_ctrl.sv"
 
 `include "AHB/Arbiter.sv"
 `include "AHB/Decoder.sv"
@@ -45,14 +50,34 @@
 module top(
   input clk,
   input rst,
+  input [32 - 1 : 0] ROM_out,
   input [31:0] IM_out,
   input [31:0] DM_out,
+  input sensor_ready,
+  input [32 - 1 : 0] sensor_out,
+  input [32 - 1 : 0] DRAM_Q,
+  output ROM_read,
+  output ROM_enable,
+  output [32 - 1 : 0] ROM_address,
+  output IM_write,
   output IM_enable,
+  output [32 - 1 : 0] IM_in,
   output [31:0] IM_address,
   output DM_write,
   output DM_enable,
   output [31:0] DM_in,
-  output [31:0] DM_address
+  output [31:0] DM_address,
+  output sensor_en,
+  output DRAM_CSn,
+  output DRAM_WEn,
+  output DRAM_RASn,
+  output DRAM_CASn,
+  output [11 - 1 : 0] DRAM_A,
+  output [32 - 1 : 0] DRAM_D,
+  output [64 - 1 : 0] L1I_access,
+  output [64 - 1 : 0] L1I_miss,
+  output [64 - 1 : 0] L1D_access,
+  output [64 - 1 : 0] L1D_miss
 );
   
 
@@ -78,6 +103,10 @@ module top(
   logic HBUSREQ_M2;
   logic HLOCK_M2;
  
+  logic [`AHB_DATA_BITS-1:0] HRDATA_S0;
+  logic HREADY_S0;
+  logic [`AHB_RESP_BITS-1:0] HRESP_S0;
+
   logic [`AHB_DATA_BITS-1:0] HRDATA_S1;
   logic HREADY_S1;
   logic [`AHB_RESP_BITS-1:0] HRESP_S1;
@@ -85,6 +114,14 @@ module top(
   logic [`AHB_DATA_BITS-1:0] HRDATA_S2;
   logic HREADY_S2;
   logic [`AHB_RESP_BITS-1:0] HRESP_S2;
+
+  logic [`AHB_DATA_BITS-1:0] HRDATA_S3;
+  logic HREADY_S3;
+  logic [`AHB_RESP_BITS-1:0] HRESP_S3;
+
+  logic [`AHB_DATA_BITS-1:0] HRDATA_S4;
+  logic HREADY_S4;
+  logic [`AHB_RESP_BITS-1:0] HRESP_S4;
 
   logic [`AHB_DATA_BITS-1:0] HRDATA;
   logic HREADY;
@@ -102,6 +139,11 @@ module top(
   logic HSEL_S1;
   logic HSEL_S2;
   logic [`AHB_BURST_BITS - 1 : 0] HBURST;
+
+  logic sctrl_en, sctrl_clear, sctrl_interrupt;
+  logic [6 - 1 : 0] sctrl_addr;
+  logic [32 - 1 : 0] sctrl_out;
+
 
   CPU CPU1(
     .clk(clk),
@@ -124,7 +166,25 @@ module top(
     .HREADY(HREADY),
     .HRESP(HRESP),
     .HGRANT_M1(HGRANT_M1),
-    .HGRANT_M2(HGRANT_M2)
+    .HGRANT_M2(HGRANT_M2),
+    .L1D_access(L1D_access),
+    .L1D_miss(L1D_miss),
+    .L1I_access(L1I_access),
+    .L1I_miss(L1I_miss),
+    .sctrl_interrupt(sctrl_interrupt)
+  );
+
+  sensor_ctrl sc1(
+    .clk(clk),
+    .rst(rst),
+    .sctrl_en(sctrl_en),
+    .sctrl_clear(sctrl_clear),
+    .sctrl_addr(sctrl_addr),
+    .sensor_ready(sensor_ready),
+    .sensor_out(sensor_out),
+    .sctrl_interrupt(sctrl_interrupt),
+    .sctrl_out(sctrl_out),
+    .sensor_en(sensor_en)
   );
 
   AHB AHB1 (
@@ -147,6 +207,10 @@ module top(
     .HBUSREQ_M2(HBUSREQ_M2),
     .HLOCK_M2(HLOCK_M2),
 
+    .HRDATA_S0(HRDATA_S0),
+    .HREADY_S0(HREADY_S0),
+    .HRESP_S0(HRESP_S0),
+
     .HRDATA_S1(HRDATA_S1),
     .HREADY_S1(HREADY_S1),
     .HRESP_S1(HRESP_S1),
@@ -154,6 +218,14 @@ module top(
     .HRDATA_S2(HRDATA_S2),
     .HREADY_S2(HREADY_S2),
     .HRESP_S2(HRESP_S2),
+
+    .HRDATA_S3(HRDATA_S3),
+    .HREADY_S3(HREADY_S3),
+    .HRESP_S3(HRESP_S3),
+
+    .HRDATA_S4(HRDATA_S4),
+    .HREADY_S4(HREADY_S4),
+    .HRESP_S4(HRESP_S4),
 
     .HRDATA(HRDATA),
     .HREADY(HREADY),
@@ -168,8 +240,31 @@ module top(
     .HWDATA(HWDATA),
     .HMASTER(HMASTER),
     .HMASTLOCK(HMASTLOCK),
+    .HSEL_S0(HSEL_S0),
     .HSEL_S1(HSEL_S1),
-    .HSEL_S2(HSEL_S2)
+    .HSEL_S2(HSEL_S2),
+    .HSEL_S3(HSEL_S3),
+    .HSEL_S4(HSEL_S4)
+  );
+  ROM_wrapper ROMW1(
+    //for AHB
+    .HREADY(HREADY_S0),
+    .HRESP(HRESP_S0),
+    .HRDATA(HRDATA_S0),
+    .HSEL_ROM(HSEL_S0),
+    .HADDR(HADDR),
+    .HWRITE(HWRITE),
+    .HTRANS(HTRANS),
+    .HSIZE(HSIZE),
+    .HBURST(HBURST),
+    .HWDATA(HWDATA),
+    .HRESETn(HRESETn),
+    .HCLK(HCLK),
+    //for ROM
+    .ROM_enable(ROM_enable),
+    .ROM_read(ROM_read),
+    .ROM_address(ROM_address),
+    .ROM_out(ROM_out)
   );
 
   IM_wrapper IMW1(
@@ -215,6 +310,51 @@ module top(
     .DM_out(DM_out)
   );
   
+  SENSOR_wrapper SENSORW1(
+    //for AHB
+    .HREADY(HREADY_S3),
+    .HRESP(HRESP_S3),
+    .HRDATA(HRDATA_S3),
+    .HSEL_SENSOR(HSEL_S3),
+    .HADDR(HADDR),
+    .HWRITE(HWRITE),
+    .HTRANS(HTRANS),
+    .HSIZE(HSIZE),
+    .HBURST(HBURST),
+    .HWDATA(HWDATA),
+    .HRESETn(HRESETn),
+    .HCLK(HCLK),
+
+    //for SENSOR
+    .sctrl_en(sctrl_en),
+    .sctrl_clear(sctrl_clear),
+    .sctrl_addr(sctrl_addr),
+    .sctrl_out(sctrl_out)
+  );
+  DRAM_wrapper DRAMW1(
+    //for AHB
+    .HREADY(HREADY_S4),
+    .HRESP(HRESP_S4),
+    .HRDATA(HRDATA_S4),
+    .HSEL_DRAM(HSEL_S4),
+    .HADDR(HADDR),
+    .HWRITE(HWRITE),
+    .HTRANS(HTRANS),
+    .HSIZE(HSIZE),
+    .HBURST(HBURST),
+    .HWDATA(HWDATA),
+    .HRESETn(HRESETn),
+    .HCLK(HCLK),
+
+    //for DRAM
+    .DRAM_in(DRAM_D),
+    .DRAM_addr(DRAM_A),
+    .DRAM_enable_n(DRAM_CSn),
+    .DRAM_write_n(DRAM_WEn),
+    .DRAM_RAS_n(DRAM_RASn),
+    .DRAM_CAS_n(DRAM_CASn),
+    .DRAM_out(DRAM_Q)
+  );
     //=================================//
     //    SystemVerilog Assertions     //
     //=================================//
@@ -231,20 +371,20 @@ module top(
 
     // You need to connect proper signals to assertions
     // Master1
-    Master1_mastlock: assert property(master_mastlock_check(HLOCK_M1, HGRANT_M1, HREADY, HMASTLOCK, (~HRESETn)))
-    `ifndef noinfo
-      $info("%8d | HMASTLOCK is asserted in time.\n", $time);
-    `endif
-    else 
-      $error("%8d | HMASTLOCK isn't asserted in time.\n", $time);
-
-    // Master2
-    Master2_mastlock: assert property(master_mastlock_check(HLOCK_M1, HGRANT_M1, HREADY, HMASTLOCK, (~HRESETn)))
-    `ifndef noinfo
-      $info("%8d | HMASTLOCK is asserted in time.\n", $time);
-    `endif
-    else 
-      $error("%8d | HMASTLOCK isn't asserted in time.\n", $time);
+    // Master1_mastlock: assert property(master_mastlock_check(HLOCK_M1, HGRANT_M1, HREADY, HMASTLOCK, (~HRESETn)))
+    // `ifndef noinfo
+    //   $info("%8d | HMASTLOCK is asserted in time.\n", $time);
+    // `endif
+    // else
+    //   $error("%8d | HMASTLOCK isn't asserted in time.\n", $time);
+    //
+    // // Master2
+    // Master2_mastlock: assert property(master_mastlock_check(HLOCK_M1, HGRANT_M1, HREADY, HMASTLOCK, (~HRESETn)))
+    // `ifndef noinfo
+    //   $info("%8d | HMASTLOCK is asserted in time.\n", $time);
+    // `endif
+    // else
+    //   $error("%8d | HMASTLOCK isn't asserted in time.\n", $time);
 
     //================================//
     //             Slave              //

@@ -38,10 +38,10 @@ module test;
     #(`CYCLE) A = 10; WEn = 0; D = 20; // Column Address
     #(`CYCLE) CASn = 0;
     #(`CYCLE*2) RASn = 1; CASn = 1; WEn = 1; D = 0;
-    #(`CYCLE) A = 5; // Row Address
-    #(`CYCLE) RASn = 0;
-    #(`CYCLE) A = 10; // Column Address
-    #(`CYCLE) CASn = 0;
+    #(`CYCLE) RASn = 0;A = 5; // Row Address
+    // #(`CYCLE)
+    #(`CYCLE) CASn = 0;A = 10; // Column Address
+    #(`CYCLE) 
     #(`CYCLE*2) RASn = 1; CASn = 1; WEn = 1; D = 0;
     #(`CYCLE*10) $finish;
   end

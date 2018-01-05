@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2017-10-08
 //
-//* Last Modified : Wed Dec 20 15:57:41 2017
+//* Last Modified : Fri 05 Jan 2018 03:28:07 PM CST
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -25,30 +25,37 @@
 `include "CPU/cache_L1.sv"
 
 module CPU (
-    input clk,
-    input rst,
-    
-    output logic [`AHB_ADDR_BITS - 1 : 0] HADDR_M1,
-    output logic [`AHB_TRANS_BITS - 1 : 0] HTRANS_M1,
-    output logic HWRITE_M1,
-    output logic [`AHB_SIZE_BITS - 1 : 0] HSIZE_M1,
-    output logic [`AHB_DATA_BITS - 1 : 0] HWDATA_M1,
-    output logic HBUSREQ_M1,
-    output logic HLOCK_M1,
+  input clk,
+  input rst,
+  
+  output logic [`AHB_ADDR_BITS - 1 : 0] HADDR_M1,
+  output logic [`AHB_TRANS_BITS - 1 : 0] HTRANS_M1,
+  output logic HWRITE_M1,
+  output logic [`AHB_SIZE_BITS - 1 : 0] HSIZE_M1,
+  output logic [`AHB_DATA_BITS - 1 : 0] HWDATA_M1,
+  output logic HBUSREQ_M1,
+  output logic HLOCK_M1,
  
-    output logic [`AHB_ADDR_BITS- 1 : 0] HADDR_M2,
-    output logic [`AHB_TRANS_BITS- 1 : 0] HTRANS_M2,
-    output logic HWRITE_M2,
-    output logic [`AHB_SIZE_BITS- 1 : 0] HSIZE_M2,
-    output logic [`AHB_DATA_BITS- 1 : 0] HWDATA_M2,
-    output logic HBUSREQ_M2,
-    output logic HLOCK_M2,
+  output logic [`AHB_ADDR_BITS- 1 : 0] HADDR_M2,
+  output logic [`AHB_TRANS_BITS- 1 : 0] HTRANS_M2,
+  output logic HWRITE_M2,
+  output logic [`AHB_SIZE_BITS- 1 : 0] HSIZE_M2,
+  output logic [`AHB_DATA_BITS- 1 : 0] HWDATA_M2,
+  output logic HBUSREQ_M2,
+  output logic HLOCK_M2,
 
-    input [`AHB_DATA_BITS- 1 : 0] HRDATA,
-    input HREADY,
-    input [`AHB_RESP_BITS - 1 : 0] HRESP,
-    input HGRANT_M1,
-    input HGRANT_M2
+  input [`AHB_DATA_BITS- 1 : 0] HRDATA,
+  input HREADY,
+  input [`AHB_RESP_BITS - 1 : 0] HRESP,
+  input HGRANT_M1,
+  input HGRANT_M2,
+
+  //
+  output logic [64 - 1 : 0] L1D_access,
+  output logic [64 - 1 : 0] L1D_miss,
+  output logic [64 - 1 : 0] L1I_access,
+  output logic [64 - 1 : 0] L1I_miss,
+  input sctrl_interrupt
 );
 
 
@@ -81,6 +88,7 @@ module CPU (
     .DM_address(DM_address_w1),
     .IM_out(IM_out_w1),
     .DM_out(DM_out_w1),
+    .sensor1_interupt(sctrl_interrupt),
     .stall(stall),
     .clk(clk),
     .rst(rst)
@@ -111,7 +119,9 @@ module CPU (
     .SYSdata_in(IM_out_w2),
     .stall(stall),
     .clk(clk),
-    .rst(rst)
+    .rst(rst),
+    .L1_access(L1I_access),
+    .L1_miss(L1I_miss)
   );
   CPUfetch_wrapper CPUFW1 (
     //for AHB
@@ -155,7 +165,9 @@ module CPU (
     .SYSdata_in(DM_out_w2),
     .stall(stall),
     .clk(clk),
-    .rst(rst)
+    .rst(rst),
+    .L1_access(L1D_access),
+    .L1_miss(L1D_miss)
   );
 
   CPUmem_wrapper CPUMW1 (
