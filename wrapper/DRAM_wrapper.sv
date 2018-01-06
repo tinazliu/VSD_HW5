@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2018-01-03
 //
-//* Last Modified : Sat 06 Jan 2018 02:10:38 PM CST
+//* Last Modified : Sat 06 Jan 2018 02:48:08 PM CST
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -50,7 +50,7 @@ module DRAM_wrapper #(
 
 );
 
-  typedef enum logic [4 - 1 : 0] {IDLE, SETTLEROW, ENABLEROW, SETTLEREADCOL, SETTLEWRITECOL, WRITEWAIT, READWAIT, DONE} State;
+  typedef enum logic [4 - 1 : 0] {IDLE, SETTLEROW, ENABLEROW, SETTLEREADCOL, SETTLEWRITECOL, WRITEWAIT, READWAIT, RESETTOACCESS} State;
   State cs, ns;
 
   logic waitRst;
@@ -66,18 +66,6 @@ module DRAM_wrapper #(
 
   //buf
   logic [`AHB_ADDR_BITS - 1 : 0] addr;
-
-  logic isDONESample;
-  always_ff @(posedge HCLK) begin : isDONESample_
-    if(cs == DONE && HSEL_DRAM) isDONESample <= 1'b1;
-    else                       isDONESample <= 1'b0;
-  end : isDONESample_
-
-  always_ff @(posedge HCLK) begin : addr_buf
-    if(~HRESETn) addr <= `AHB_ADDR_BITS'h00000000;
-    else if ((cs == IDLE&&~isDONESample&&HSEL_DRAM)||(cs == DONE && HSEL_DRAM)) addr <= HADDR;
-    else            addr <= addr;
-  end : addr_buf
 
   always_ff @(posedge HCLK ) begin : state_transfer
     if (~HRESETn) begin
@@ -97,11 +85,13 @@ module DRAM_wrapper #(
                  else       ns = SETTLEREADCOL;
       SETTLEREADCOL:        ns = READWAIT;
       SETTLEWRITECOL:       ns = WRITEWAIT;
-      READWAIT:   if(read_done)  ns = DONE;
-                  else           ns = READWAIT;
-      WRITEWAIT:  if(write_done) ns = DONE;
-                  else           ns = WRITEWAIT;
-      DONE: ns = IDLE;
+      READWAIT:   if(read_done && HSEL_DRAM)  ns = SETTLEROW;
+                  else if (read_done)         ns = IDLE;
+                  else                        ns = READWAIT;
+      WRITEWAIT:  if(write_done && HSEL_DRAM) ns = SETTLEROW;
+                  else if (write_done)        ns = IDLE;
+                  else                        ns = WRITEWAIT;
+      RESETTOACCESS: ns = SETTLEROW;
       default: ns = IDLE;
     endcase
   end : next_state
@@ -111,13 +101,26 @@ module DRAM_wrapper #(
     waitRst    = (cs == READWAIT || cs == WRITEWAIT)? 1'b0:1'b1;
   end : fix
 
+  always_ff @(posedge HCLK) begin :addr_buf
+    if (~HRESETn) begin
+      addr <= 'b0;
+    end
+    else if((cs == IDLE) ||
+       (cs == WRITEWAIT && write_done && HSEL_DRAM) ||
+       (cs == READWAIT && read_done && HSEL_DRAM) ) begin
+      addr <= HADDR;
+    end
+    else begin
+      addr <= addr;     
+    end
+  end :addr_buf
   always_comb begin : out 
     case (cs)
       IDLE: begin
         HREADY        = ~HSEL_DRAM;
         HRDATA        = 'b0;
         DRAM_in       = 'b0;
-        DRAM_addr     = addr[`DRAMROW];
+        DRAM_addr     = HADDR[`DRAMROW];
         DRAM_enable_n = 'b1;
         DRAM_write_n  = 'b1;
         DRAM_RAS_n    = 'b1;
@@ -164,19 +167,17 @@ module DRAM_wrapper #(
         DRAM_CAS_n    = 'b1;
       end
       READWAIT: begin
-        HREADY        = 'b0;
-        HRDATA        = 'b0;
+        HREADY        = read_done;
+        HRDATA        = DRAM_out;
         DRAM_in       = 'b0;
         DRAM_addr     = {1'b0, addr[`DRAMCOL]};
         DRAM_enable_n = 'b0;
         DRAM_write_n  = 'b1;
         DRAM_RAS_n    = 'b0;
         DRAM_CAS_n    = 'b0;
-        DRAM_CAS_n    = 'b1;
-        DRAM_CAS_n    = 'b0;
       end
       WRITEWAIT: begin
-        HREADY        = 'b0;
+        HREADY        = write_done;
         HRDATA        = 'b0;
         DRAM_in       = HWDATA;
         DRAM_addr     = {1'b0, addr[`DRAMCOL]};
@@ -184,11 +185,9 @@ module DRAM_wrapper #(
         DRAM_write_n  = 'b0;
         DRAM_RAS_n    = 'b0;
         DRAM_CAS_n    = 'b0;
-        DRAM_CAS_n    = 'b1;
-        DRAM_CAS_n    = 'b0;
       end
-      DONE: begin
-        HREADY        = 'b1;
+      RESETTOACCESS: begin
+        HREADY        = 'b0;
         HRDATA        = DRAM_out;
         DRAM_in       = 'b0;
         DRAM_addr     = 'b0;
