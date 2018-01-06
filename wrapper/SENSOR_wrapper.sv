@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2018-01-04
 //
-//* Last Modified : Fri 05 Jan 2018 06:31:49 AM CST
+//* Last Modified : Fri 05 Jan 2018 04:10:09 PM CST
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -63,7 +63,7 @@ module  SENSOR_wrapper #(
 
   always_ff @(posedge HCLK) begin : addr_buf_
     if (~HRESETn) addr_buf = 'b0;
-    else if(HSEL_SENSOR&&(r_cs==IDLE)) addr_buf = HADDR;
+    else if(HSEL_SENSOR&&(r_cs==IDLE)) addr_buf = HADDR[5:0];
     else addr_buf = addr_buf;
   end : addr_buf_
 

@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2017-11-05
 //
-//* Last Modified : Fri 05 Jan 2018 03:22:24 PM CST
+//* Last Modified : Sat 06 Jan 2018 01:26:11 AM CST
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -283,7 +283,9 @@ module top(
     .HCLK(HCLK),
     //for IM
     .IM_enable(IM_enable),
+    .IM_write(IM_write),
     .IM_address(IM_address),
+    .IM_in(IM_in),
     .IM_out(IM_out)
   );
 

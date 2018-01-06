@@ -7,7 +7,7 @@
 
 * Creation Date : 2017-09-28
 
-* Last Modified : Mon 01 Jan 2018 02:00:48 AM CST
+* Last Modified : Sat 06 Jan 2018 12:00:59 AM CST
 
 * Created By :  Ji-Ying, Li
 
@@ -125,4 +125,8 @@
 `define INDEXFIELD 9:4
 `define BLOCKOFFSETFIELD 3:2
 
+//DRAM ADDR field
+
+`define DRAMROW 22:12
+`define DRAMCOL 11:2
 `endif

@@ -50,7 +50,7 @@ module DRAM_wrapper #(
 
 );
 
-  typedef enum logic [4 - 1 : 0] {IDLE, SETTLEROW, ENABLEROW, SETTLEREADCOL, SETTLEWRITECOL, WRITEWAIT, READWAIT, DONE} State;
+  typedef enum logic [4 - 1 : 0] {IDLE, SETTLEROW, ENABLEROW, SETTLEREADCOL, SETTLEWRITECOL, WRITEWAIT, READWAIT, RESSETTOACCESS} State;
   State cs, ns;
 
   logic waitRst;
@@ -66,18 +66,6 @@ module DRAM_wrapper #(
 
   //buf
   logic [`AHB_ADDR_BITS - 1 : 0] addr;
-
-  logic isDONESample;
-  always_ff @(posedge HCLK) begin : isDONESample_
-    if(cs == DONE && HSEL_DRAM) isDONESample <= 1'b1;
-    else                       isDONESample <= 1'b0;
-  end : isDONESample_
-
-  always_ff @(posedge HCLK) begin : addr_buf
-    if(~HRESETn) addr <= `AHB_ADDR_BITS'h00000000;
-    else if ((cs == IDLE&&~isDONESample&&HSEL_DRAM)||(cs == DONE && HSEL_DRAM)) addr <= HADDR;
-    else            addr <= addr;
-  end : addr_buf
 
   always_ff @(posedge HCLK ) begin : state_transfer
     if (~HRESETn) begin

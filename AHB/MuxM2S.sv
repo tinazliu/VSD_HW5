@@ -55,7 +55,7 @@ module MuxM2S(
         HSIZE  = HSIZE_M2;
       end
       default: begin
-        HADDR  = `AHB_ADDR_BITS'b0;
+        HADDR  = `AHB_ADDR_BITS'hF000_0000;
         HTRANS = `AHB_TRANS_BITS'b0;
         HWRITE = 1'b0;
         HSIZE  = `AHB_SIZE_BITS'b0;

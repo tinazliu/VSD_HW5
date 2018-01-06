@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2017-11-22
 //
-//* Last Modified : Wed Dec 20 15:41:58 2017
+//* Last Modified : Sat 06 Jan 2018 01:23:16 AM CST
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -108,7 +108,7 @@ module FSMCPUmemwrapper #(
       IDLE: begin
         HBUSREQ = DM_enable;
         HLOCK   = DM_enable & (DM_write == 1'b0);
-        HADDR   = `AHB_ADDR_BITS'b0;
+        HADDR   = `AHB_ADDR_BITS'hF000_0000;
         HWRITE  = 1'b0;
         HWDATA  = `AHB_DATA_BITS'b0;
         ready   = ~DM_enable;//1'b1;
@@ -118,7 +118,7 @@ module FSMCPUmemwrapper #(
       ADDRPHASE: begin
         HBUSREQ = 1'b0;
         HLOCK   = 1'b0;
-        HADDR   = {{4'h2}, DM_address[27:0]};
+        HADDR   = DM_address;
         HWRITE  = 1'b1;
         HWDATA  = `AHB_DATA_BITS'b0;
         ready   = 1'b0;
@@ -128,7 +128,7 @@ module FSMCPUmemwrapper #(
       DATAPHASE: begin
         HBUSREQ = 1'b0;
         HLOCK   = 1'b0;
-        HADDR   = `AHB_ADDR_BITS'b0;
+        HADDR   = `AHB_ADDR_BITS'hF000_0000;
         HWRITE  = 1'b0;
         HWDATA  = DM_in;
         ready   = HREADY;
@@ -138,7 +138,7 @@ module FSMCPUmemwrapper #(
       DONE: begin
         HBUSREQ = 1'b0;
         HLOCK   = 1'b0;
-        HADDR   = `AHB_ADDR_BITS'b0;
+        HADDR   = `AHB_ADDR_BITS'hF000_0000;
         HWRITE  = 1'b0;
         HWDATA  = `AHB_DATA_BITS'b0;
         ready   = 1'b1;
@@ -168,7 +168,7 @@ module FSMCPUmemwrapper #(
       RDATAPHASE: begin
         HBUSREQ   = 1'b0;
         HLOCK     = 1'b0;
-        HADDR     = `AHB_ADDR_BITS'b0;
+        HADDR     = `AHB_ADDR_BITS'hF000_0000;
         HWRITE    = 1'b0;
         HWDATA    = `AHB_DATA_BITS'b0;
         ready     = HREADY;
@@ -178,7 +178,7 @@ module FSMCPUmemwrapper #(
       default: begin
         HBUSREQ = DM_enable;
         HLOCK   = DM_enable & (DM_write == 1'b0);
-        HADDR   = `AHB_ADDR_BITS'b0;
+        HADDR   = `AHB_ADDR_BITS'hF000_0000;
         HWRITE  = 1'b0;
         HWDATA  = `AHB_DATA_BITS'b0;
         ready   = ~DM_enable;//1'b1;
@@ -193,10 +193,10 @@ module FSMCPUmemwrapper #(
       IDLE:      next_DM_address = DM_address;
       ADDRPHASE: next_DM_address = DM_address; 
       DATAPHASE: next_DM_address = DM_address;  
-      DONE:      next_DM_address = `AHB_ADDR_BITS'b0;
-      RADDRPHASE:     next_DM_address = next_DM_address + 'd4; 
-      RADDRDATAPHASE: next_DM_address = next_DM_address + 'd4;  
-      RDATAPHASE:     next_DM_address = `AHB_ADDR_BITS'b0;
+      DONE:      next_DM_address = `AHB_ADDR_BITS'hF000_0000;
+      RADDRPHASE:     next_DM_address = (HREADY)? next_DM_address + 'd4: next_DM_address; 
+      RADDRDATAPHASE: next_DM_address = (HREADY)? next_DM_address + 'd4: next_DM_address;  
+      RDATAPHASE:     next_DM_address = `AHB_ADDR_BITS'hF000_0000;
       default:  ; 
     endcase
   end : DM_out_buf

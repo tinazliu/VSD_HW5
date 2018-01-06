@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2018-01-03
 //
-//* Last Modified : Sat 06 Jan 2018 04:15:37 AM CST
+//* Last Modified : Sat 06 Jan 2018 03:32:56 AM CST
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -39,7 +39,7 @@ module ROM_wrapper (
   input [`AHB_DATA_BITS - 1 : 0] ROM_out
 );
 
-  typedef enum logic [2 - 1 : 0] {IDLE, SETTLEADDR, DATAACCESS, RESETTODATAACCESS} State;
+  typedef enum logic [2 - 1 : 0] {IDLE, SETTLEADDR, ROMREAD, DONE} State;
   State cs, ns;
 
   logic waitDone, waitRst;
@@ -50,6 +50,17 @@ module ROM_wrapper (
   );
 
   //buf
+  logic [`AHB_ADDR_BITS - 1 : 0] addr;
+  logic isDONESample;
+  always_ff @(posedge HCLK) begin : isDONESample_
+    if(cs == DONE && HSEL_ROM) isDONESample <= 1'b1;
+    else                       isDONESample <= 1'b0;
+  end : isDONESample_
+  always_ff @(posedge HCLK) begin : addr_buf
+    if(~HRESETn) addr <= `AHB_ADDR_BITS'h0;
+    else if ((cs == IDLE&& ~isDONESample&& HSEL_ROM)||(cs == DONE && HSEL_ROM)) addr <= HADDR;
+    else            addr <= addr;
+  end : addr_buf
 
   always_ff @(posedge HCLK ) begin : state_transfer
     if (~HRESETn) begin
@@ -62,13 +73,12 @@ module ROM_wrapper (
   
   always_comb begin : next_state
     case (cs)
-      IDLE:   if(HSEL_ROM) ns = SETTLEADDR;
+      IDLE:   if(HSEL_ROM|isDONESample) ns = ROMREAD;
               else         ns = IDLE;
-      SETTLEADDR: ns = DATAACCESS;
-      DATAACCESS:  if(waitDone & HSEL_ROM) ns = RESETTODATAACCESS;
-                   else if (waitDone) ns = IDLE;
-                   else ns = DATAACCESS;
-      RESETTODATAACCESS: ns = SETTLEADDR;
+      // SETTLEADDR: ns = ROMREAD;
+      ROMREAD:  if(waitDone) ns = DONE;
+                else ns = ROMREAD;
+      DONE:     ns = IDLE;  
       default: ns = IDLE;
     endcase
   end : next_state
@@ -76,61 +86,34 @@ module ROM_wrapper (
   always_comb begin : fix
     HRESP = 'b0;
     ROM_enable = 1'b1;
-    waitRst    = (cs == DATAACCESS)? 1'b0:1'b1;
+    waitRst    = (cs == ROMREAD)? 1'b0:1'b1;
   end : fix
-
-
-  logic [`AHB_ADDR_BITS - 1 : 0] addr, daddr;
-  always_ff @(posedge HCLK) begin : addr_buf
-    case (cs)
-      IDLE: begin
-        addr <= (HSEL_ROM)? HADDR: 'b0;
-        daddr <= 'b0;
-      end
-      SETTLEADDR: begin
-        addr <= (addr);
-        daddr <= (HSEL_ROM)? HADDR: 'b0;
-      end
-      DATAACCESS: begin
-        addr <= (addr);
-        daddr <= (HSEL_ROM)? HADDR: 'b0;
-      end
-      RESETTODATAACCESS: begin
-        addr <= daddr;
-        daddr<= daddr;
-      end
-      default: begin
-        addr <= 'b0;
-        daddr <= 'b0;
-      end
-    endcase
-  end : addr_buf
 
   always_comb begin : out  
     case (cs)
       IDLE: begin
-        HREADY = ~HSEL_ROM;
+        HREADY = (isDONESample)? ~(addr[31:28] == 4'h0): ~HSEL_ROM;
         HRDATA = 'b0;
-        ROM_read   = 1'b0;
-        ROM_address = HADDR;
-      end
-      SETTLEADDR: begin
-        HREADY = 1'b0;
-        HRDATA = ROM_out;
         ROM_read   = 1'b0;
         ROM_address = addr;
       end
-      DATAACCESS: begin
-        HREADY = waitDone;
-        HRDATA = ROM_out;
+      // SETTLEADDR: begin
+      //   HREADY = 1'b0;
+      //   HRDATA = 'b0;
+      //   ROM_read   = 1'b0;
+      //   ROM_address = addr;
+      // end
+      ROMREAD: begin
+        HREADY = 1'b0;
+        HRDATA = 'b0;
         ROM_read   = 1'b1;
         ROM_address = addr;
       end
-      RESETTODATAACCESS: begin
-        HREADY = 1'b0;
+      DONE: begin
+        HREADY = 1'b1;
         HRDATA = ROM_out;
-        ROM_read   = 1'b0;
-        ROM_address = daddr;
+        ROM_read   = 1'b1;
+        ROM_address = addr;
       end
       default: begin
         HREADY = 1'b1;

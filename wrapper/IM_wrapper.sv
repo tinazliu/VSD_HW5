@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2017-11-04
 //
-//* Last Modified : Sun 05 Nov 2017 10:52:27 PM CST
+//* Last Modified : Sat 06 Jan 2018 01:25:38 AM CST
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -31,14 +31,47 @@ module IM_wrapper (
   input HCLK,
   //for IM
   output logic IM_enable,
+  output logic IM_write,
   output logic [`AHB_DATA_BITS - 1:0] IM_address,
+  output logic [`AHB_DATA_BITS - 1:0] IM_in,
   input [`AHB_DATA_BITS - 1 : 0] IM_out
 );
 
+  //delay register
+  
+  logic IM_enable_delay, IM_write_delay, delay_trigger;
+  logic [`AHB_DATA_BITS - 1:0] IM_address_delay;
+
+  always_ff @(posedge HCLK) begin : control_delay
+    if(HSEL_IM & HWRITE) begin
+      IM_write_delay   <= HWRITE;
+      IM_address_delay <= {14'b0, HADDR[17:0]}; 
+      IM_enable_delay  <= HSEL_IM;
+      delay_trigger    <= 1'b1;
+    end
+    else begin
+      IM_write_delay   <= 1'b0;
+      IM_address_delay <= `AHB_DATA_BITS'b0; 
+      IM_enable_delay  <= HSEL_IM;
+      delay_trigger    <= 1'b0;
+    end
+  end : control_delay
+
+  always_comb begin : IM_interface_selection
+    if (delay_trigger == 1'b1) begin
+      IM_write   = IM_write_delay;
+      IM_address = IM_address_delay; 
+      IM_enable  = IM_enable_delay;
+    end
+    else begin
+      IM_write   = HWRITE;
+      IM_address = {14'b0, HADDR[17:0]}; 
+      IM_enable  = (HWRITE == 1'b1)? 1'b0: HSEL_IM;
+    end
+  end : IM_interface_selection
   always_comb begin : direct_connectivity
-    IM_address = {14'b0, HADDR[17:0]}; 
-    IM_enable  = HSEL_IM;
-    HRDATA     = IM_out;
+    IM_in  = HWDATA;
+    HRDATA = IM_out;
     HRESP = 2'b00;
   end : direct_connectivity
 

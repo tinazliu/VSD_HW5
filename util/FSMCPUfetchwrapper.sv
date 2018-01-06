@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2017-11-22
 //
-//* Last Modified : Wed Dec 20 15:42:43 2017
+//* Last Modified : Sat 06 Jan 2018 02:59:47 AM CST
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -128,7 +128,7 @@ module FSMCPUfetchwrapper #(
       DATAPHASE: begin
         HBUSREQ   = 1'b0;
         HLOCK     = 1'b0;
-        HADDR     = `AHB_ADDR_BITS'b0;
+        HADDR     = `AHB_ADDR_BITS'hF000_0000;
         HWRITE    = 1'b0;
         HWDATA    = `AHB_DATA_BITS'b0;
         ready     = HREADY;
@@ -138,7 +138,7 @@ module FSMCPUfetchwrapper #(
       DONE: begin
         HBUSREQ   = 1'b0;
         HLOCK     = 1'b0;
-        HADDR     = `AHB_ADDR_BITS'b0;
+        HADDR     = `AHB_ADDR_BITS'hF000_0000;
         HWRITE    = 1'b0;
         HWDATA    = `AHB_DATA_BITS'b0;
         ready     = 1'b1;
@@ -147,7 +147,7 @@ module FSMCPUfetchwrapper #(
       end
       default: begin
         HBUSREQ = 1'b0;
-        HADDR   = `AHB_ADDR_BITS'b0;
+        HADDR   = `AHB_ADDR_BITS'hF000_0000;
         HWRITE  = 1'b0;
         HWDATA  = `AHB_DATA_BITS'b0;
         ready   = 1'b1;
@@ -159,10 +159,10 @@ module FSMCPUfetchwrapper #(
   always_ff @(posedge HCLK) begin : IM_out_buf
     case (cs)
       IDLE:          next_IM_address = IM_address;
-      ADDRPHASE:     next_IM_address = next_IM_address + 'd4; 
-      ADDRDATAPHASE: next_IM_address = next_IM_address + 'd4;  
-      DATAPHASE:     next_IM_address = `AHB_ADDR_BITS'b0;
-      DONE:          next_IM_address = `AHB_ADDR_BITS'b0;
+      ADDRPHASE:     next_IM_address = (HREADY)? next_IM_address + 'd4: next_IM_address; 
+      ADDRDATAPHASE: next_IM_address = (HREADY)? next_IM_address + 'd4: next_IM_address;  
+      DATAPHASE:     next_IM_address = `AHB_ADDR_BITS'hF000_0000;
+      DONE:          next_IM_address = `AHB_ADDR_BITS'hF000_0000;
       default:   ;
     endcase
   end : IM_out_buf

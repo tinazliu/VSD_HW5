@@ -70,6 +70,7 @@ module DRAM(
     end
 
     always@(posedge RST or negedge CASn)begin
+        #1;
         if(RST)begin
             for (i=0;i<mem_size;i=i+1) begin
                 mem_data [i] <=0;
@@ -81,6 +82,7 @@ module DRAM(
     end
     
     always@(posedge RST or CASn or RASn) begin
+        #1;
         if (RST) begin
           Q <= Hi_Z_pattern;
         end
