@@ -7,7 +7,7 @@
 //
 //* Creation Date : 2018-01-03
 //
-//* Last Modified : Sat 06 Jan 2018 02:48:08 PM CST
+//* Last Modified : Sat 06 Jan 2018 03:14:05 PM CST
 //
 //* Created By :  Ji-Ying, Li
 //
@@ -50,7 +50,7 @@ module DRAM_wrapper #(
 
 );
 
-  typedef enum logic [4 - 1 : 0] {IDLE, SETTLEROW, ENABLEROW, SETTLEREADCOL, SETTLEWRITECOL, WRITEWAIT, READWAIT, RESETTOACCESS} State;
+  typedef enum logic [4 - 1 : 0] {IDLE, SETTLEROW, ENABLEROW, SETTLEREADCOL, SETTLEWRITECOL, WRITEWAIT, READWAIT} State;
   State cs, ns;
 
   logic waitRst;
@@ -91,7 +91,6 @@ module DRAM_wrapper #(
       WRITEWAIT:  if(write_done && HSEL_DRAM) ns = SETTLEROW;
                   else if (write_done)        ns = IDLE;
                   else                        ns = WRITEWAIT;
-      RESETTOACCESS: ns = SETTLEROW;
       default: ns = IDLE;
     endcase
   end : next_state
@@ -183,16 +182,6 @@ module DRAM_wrapper #(
         DRAM_addr     = {1'b0, addr[`DRAMCOL]};
         DRAM_enable_n = 'b0;
         DRAM_write_n  = 'b0;
-        DRAM_RAS_n    = 'b0;
-        DRAM_CAS_n    = 'b0;
-      end
-      RESETTOACCESS: begin
-        HREADY        = 'b0;
-        HRDATA        = DRAM_out;
-        DRAM_in       = 'b0;
-        DRAM_addr     = 'b0;
-        DRAM_enable_n = 'b0;
-        DRAM_write_n  = 'b1;
         DRAM_RAS_n    = 'b0;
         DRAM_CAS_n    = 'b0;
       end
