@@ -7,6 +7,7 @@
 //
 //* Creation Date : 2017-12-19
 //
+//* Last Modified : Mon 01 Jan 2018 02:02:27 AM CST
 //* Last Modified : Fri 05 Jan 2018 03:27:29 PM CST
 //
 //* Created By :  Ji-Ying, Li
@@ -29,6 +30,9 @@
 `include "CPU/data_hazard_unit.sv"
 `include "CPU/branch_decision_unit.sv"
 `include "CPU/lw_proccessing_unit.sv"
+`include "CPU/csr_controller.sv"
+`include "CPU/csr_reg.sv"
+`include "CPU/csr_datain_mul.sv"
 
 module core #(
   parameter PCWIDTH              = 32,
@@ -132,8 +136,9 @@ module core #(
   //===================================================
   
   logic [PCWIDTH - 1 : 0] current_pc, next_pc, pc4_IF;
-  
-  assign pc4_IF = current_pc + 4;
+  logic [PCWIDTH - 1 : 0] csr_PC_out;
+  //>>>>>>> csr >>>>>>> 
+  assign pc4_IF = (sensor1_interupt)? csr_PC_out : current_pc + 4;
   assign next_pc = (pc_sel)? pcplusimm:pc4_IF;
 
   //IF instance
@@ -187,7 +192,15 @@ module core #(
   
 
   logic [REGWIDTH - 1 : 0] IM_out_buf;
-
+  //>>>>>>> csr >>>>>>>
+  logic csr_en_sig_ID;
+  logic csr_write_ID;
+  logic csr_read_ID;
+  logic csr_MRET_ID;
+  logic csr_WFI_ID;
+  logic csr_imm_mode_ID;
+  logic [2:0]csr_WSC_mode_ID;
+ 
   always_ff @(posedge clk) begin :cutset_IFID
     case (cutset_sel_IFID)
       `CUTSETFLUSH: begin
@@ -310,7 +323,8 @@ module core #(
     .memaccess_sign(memaccess_sign_ID) ,
     .reg_write_sel(reg_write_sel_ID),
     .op(op),
-    .fun3(fun3)
+    .fun3(fun3),
+    .CSR_en(CSR_en)
   );
 
   regfile RF1(
@@ -334,6 +348,24 @@ module core #(
     .rs2_ID(rs2_ID)
   );
 
+  //>>>>>> csr >>>>>>> 
+  
+  csr_controller csr_ctrl(
+    .csr_en_sig(csr_en_sig_ID),
+    .csr_write(csr_write_ID),
+    .csr_read(csr_read_ID),
+    .csr_WRET(csr_WRET_ID),
+    .csr_WFI(csr_WFI_ID),
+    .csr_imm_mode(csr_imm_mode_ID),
+    .csr_WSC_mode(csr_WSC_mode_ID),
+
+    .CSR_en(CSR_en),
+    .fun3(fun3),
+    .fun7(fun7)
+   );
+
+  
+
   //===================================================
   // *stage name: EX
   // *description of stage: excution
@@ -348,6 +380,21 @@ module core #(
   logic [WBSELWIDTH - 1 : 0] reg_write_sel_EX;
   logic [ALUOPWIDTH - 1 : 0] aluop_EX;
   logic [WORDTYPEWIDTH - 1 : 0] memaccess_type_EX;
+
+  //>>>>>> csr >>>>>>>
+  logic csr_en_sig_EX;
+  logic csr_write_EX;
+  logic csr_read_EX;
+  logic csr_MRET_EX;
+  logic csr_WFI_EX;
+  logic csr_imm_mode_EX;
+  logic [2:0]csr_WSC_mode_EX;
+  logic [IMM12WIDTH - 1 : 0] csr_addr_EX; // = imm12
+  logic [REGWIDTH - 1 : 0] csr_datain;
+  logic [REGWIDTH - 1 : 0] csr_out_EX;
+
+  //////////////// 
+ 
   
   always_ff @(posedge clk ) begin : cutset_IDEX
     case (cutset_sel_IDEX)
@@ -368,6 +415,16 @@ module core #(
         aluop_EX          <= {(ALUOPWIDTH){1'b0}};
         memaccess_type_EX <= `MEMACCESSWORD;
         memaccess_sign_EX <= `MEMACCESSSIGN;
+        // >>>>> csr >>>>>
+        csr_en_sig_EX     <= 'd0;
+        csr_write_EX      <= 'd0;
+        csr_read_EX      <= 'd0;
+        csr_MRET_EX <= 'd0;
+        csr_WFI_EX <= 'd0;
+        csr_imm_mode_EX <= 'd0;
+        csr_WSC_mode_EX <= 'd0;
+        csr_addr_EX       <= 'd0;
+ 
       end
       `CUTSETSTALL: begin
         alu_src_sel_EX    <= alu_src_sel_EX   ;
@@ -386,6 +443,16 @@ module core #(
         aluop_EX          <= aluop_EX         ;
         memaccess_type_EX <= memaccess_type_EX;
         memaccess_sign_EX <= memaccess_sign_EX ;
+        //>>>>> csr >>>>>
+        csr_en_sig_EX <= csr_en_sig_EX ;
+        csr_write_EX <= csr_write_EX ;
+        csr_read_EX <= csr_read_EX ;
+        csr_MRET_EX <= csr_MRET_EX ;
+        csr_WFI_EX <= csr_WFI_EX ;
+        csr_imm_mode_EX <= csr_imm_mode_EX ;
+        csr_WSC_mode_EX <= csr_WSC_mode_EX ;
+        csr_addr_EX       <= csr_addr_EX;
+        
       end
       default: begin
         alu_src_sel_EX    <= alu_src_sel_ID   ;
@@ -404,6 +471,16 @@ module core #(
         aluop_EX          <= aluop_ID         ;
         memaccess_type_EX <= memaccess_type_ID;
         memaccess_sign_EX <= memaccess_sign_ID ;
+        // >>>>>>> csr >>>>>>>
+        csr_en_sig_EX     <= csr_en_sig_ID ;
+        csr_write_EX      <= csr_write_ID ;
+        csr_read_EX       <= csr_read_ID ;
+        csr_MRET_EX       <= csr_MRET_ID ;
+        csr_WFI_EX        <= csr_WFI_ID ;
+        csr_imm_mode_EX   <= csr_imm_mode_ID ;
+        csr_WSC_mode_EX   <= csr_WSC_mode_ID ;
+        csr_addr_EX       <= imm12;
+ 
       end
     endcase
   end : cutset_IDEX
@@ -455,6 +532,37 @@ module core #(
     .aluop(aluop_EX)
   );
 
+  //>>>>>>> csr >>>>>>>
+ csr_datain_mul  csr_datain_mul1(
+   .csr_datain(csr_datain),
+   .csr_out(csr_out_EX), 
+   .rs1_zimm_addr(rs1_addr_EX),
+   .rs1(alusrc1),
+   .csr_imm_mode(csr_imm_mode_EX),
+   .csr_WSC_mode(csr_WSC_mode_EX)
+  );
+
+  csr_reg csr_reg1(
+   .csr_out(csr_out_EX),
+   .PC_out(csr_PC_out), //<<<<<<<<<<
+   .csr_datain(csr_datain),
+   .csr_raddr(csr_addr_EX),
+   .csr_waddr(csr_addr_EX),
+   .csr_en(csr_en_sig_EX),
+   .csr_write(csr_write_EX),
+   .csr_read(csr_read_EX),
+   .csr_MRET(csr_MRET_EX),
+   .csr_WFI(csr_WFI_EX),
+   .sensor_int(sensor1_interupt), // sensor has the request for interrupt
+   .pc_stall(pc_stall), 
+   .csr_stall((cutset_sel_EXMEM == `CUTSETSTALL)), 
+   .clk(clk),
+   .rst(rst),
+   .current_PC(current_pc) //<<<<<<<<<<<
+
+);
+
+
   //===================================================
   // *stage name: MEM
   // *description of stage: memory access
@@ -469,6 +577,8 @@ module core #(
   logic [WBSELWIDTH - 1 : 0] reg_write_sel_MEM;
 
   logic [WORDTYPEWIDTH - 1 : 0] memaccess_type_MEM;
+  //>>>>>>>> csr >>>>>>>>>>>
+  logic [REGWIDTH - 1 : 0] csr_out_MEM; // <<<<<
   always_ff @(posedge clk) begin :cutset_EXMEM
     case (cutset_sel_EXMEM)
       `CUTSETFLUSH: begin
@@ -484,6 +594,8 @@ module core #(
         imm_MEM            <= {(REGWIDTH){1'b0}};
         memaccess_type_MEM <= `MEMACCESSWORD;
         memaccess_sign_MEM <= `MEMACCESSSIGN ;
+       //>>>>>>>> csr >>>>>>>>>>>
+        csr_out_MEM        <= 'd0;
       end
       `CUTSETSTALL: begin
         DM_write_MEM      <= DM_write_MEM      ;
@@ -498,6 +610,8 @@ module core #(
         imm_MEM           <= imm_MEM           ;
         memaccess_type_MEM <= memaccess_type_MEM ;
         memaccess_sign_MEM <= memaccess_sign_MEM ;
+         //>>>>>>>> csr >>>>>>>>>
+        csr_out_MEM        <= csr_out_MEM;
       end
       default: begin
         DM_write_MEM      <= DM_write_EX       ;
@@ -512,6 +626,8 @@ module core #(
         imm_MEM           <= imm_EX            ;
         memaccess_type_MEM <= memaccess_type_EX;
         memaccess_sign_MEM <= memaccess_sign_EX;
+         //>>>>>>>> csr >>>>>>>>>
+        csr_out_MEM        <= csr_out_EX;
       end
     endcase
   end :cutset_EXMEM
@@ -533,6 +649,9 @@ module core #(
       end
       `WBFROMPCIMM : begin
         forward_src_MEM = pcplusimm_MEM;
+      end
+       `WBFROMCSR : begin
+        forward_src_MEM = csr_out_MEM;
       end
       default: begin
         forward_src_MEM = alu_result_MEM;
@@ -563,6 +682,8 @@ module core #(
   logic [WBSELWIDTH - 1 : 0] reg_write_sel_WB;
   logic [REGWIDTH - 1 : 0] DM_out_buf;
   logic [REGWIDTH - 1 : 0] DM_out_buf_w;
+  //>>>>>>> csr >>>>>>>>>>>
+  logic [REGWIDTH - 1 : 0] csr_out_WB; // <<<<<
 
   logic [WORDTYPEWIDTH - 1 : 0] memaccess_type_WB;
   always_ff @(posedge clk) begin : cutset_MEMWB
@@ -578,6 +699,8 @@ module core #(
         DM_out_buf        <= {(REGWIDTH){1'b0}}    ;
         memaccess_type_WB <= `MEMACCESSWORD        ;
         memaccess_sign_WB <= `MEMACCESSSIGN        ;
+        //>>>>>>> csr >>>>>>>
+        csr_out_WB        <= 'd0;
       end
       `CUTSETSTALL: begin
         rf_write_WB       <= rf_write_WB       ;
@@ -590,6 +713,9 @@ module core #(
         DM_out_buf        <= DM_out_buf        ;
         memaccess_type_WB <= memaccess_type_WB ;
         memaccess_sign_WB <= memaccess_sign_WB ;
+        //>>>>>>> csr >>>>>>>
+        //<<<<<<< csr <<<<<<<
+        csr_out_WB        <= csr_out_WB;
       end
       default: begin
         rf_write_WB       <= rf_write_MEM       ;
@@ -602,6 +728,9 @@ module core #(
         DM_out_buf        <= DM_out             ;
         memaccess_type_WB <= memaccess_type_MEM ;
         memaccess_sign_WB <= memaccess_sign_MEM ;
+        //>>>>>>> csr >>>>>>>
+        //<<<<<<< csr <<<<<<<
+        csr_out_WB        <= csr_out_MEM;
       end
     endcase
   end : cutset_MEMWB
@@ -625,6 +754,9 @@ module core #(
       end
       `WBFROMPCIMM : begin
         wbdata = pcplusimm_WB;
+      end
+      `WBFROMCSR : begin
+        wbdata = csr_out_WB;
       end
       default: begin
         wbdata = {(WBSELWIDTH){1'b0}};

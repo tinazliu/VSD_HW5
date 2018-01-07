@@ -34,7 +34,7 @@ module controller #(
   output logic [WORDTYPEWIDTH - 1 : 0] memaccess_type,
   output logic memaccess_sign,
   output logic [REGWRITENFROMWIDTH - 1 : 0]reg_write_sel  ,
-
+  output logic CSR_en                ,
   input [OPCODEWIDTH - 1 : 0] op,
   input [FUN3WIDTH - 1 : 0] fun3
 );
@@ -55,6 +55,7 @@ module controller #(
         en_pcplusimm   = 1'b0                   ;   //0 for unable
         memaccess_type = `MEMACCESSWORD         ;  //dont'care
         memaccess_sign = `MEMACCESSSIGN         ;
+        CSR_en         = 1'b0                   ;
       end
       `ITYPE: begin
         rf_read        = 1'b1                   ;
@@ -69,6 +70,7 @@ module controller #(
         en_pcplusimm   = 1'b0                   ;   //0 for unable
         memaccess_type = `MEMACCESSWORD         ;  //dont'care
         memaccess_sign = `MEMACCESSSIGN         ;
+        CSR_en         = 1'b0                   ;
       end
       `ITYPE_L: begin
         rf_read        = 1'b1                   ;
@@ -81,6 +83,7 @@ module controller #(
         jump           = 1'b0                   ;
         sel_src_pcplusimm = 1'b0                ;
         en_pcplusimm   = 1'b0                   ;   //0 for unable
+        CSR_en         = 1'b0                   ;
         if(fun3 == 3'b000)   begin
           memaccess_type = `MEMACCESSBYTE       ;
           memaccess_sign = `MEMACCESSSIGN       ;
@@ -115,6 +118,7 @@ module controller #(
         en_pcplusimm   = 1'b1                   ;   //0 for unable
         memaccess_type = `MEMACCESSWORD         ;  //dont'care
         memaccess_sign = `MEMACCESSSIGN         ;
+        CSR_en         = 1'b0                   ;
       end
       `STYPE: begin
         rf_read        = 1'b1                   ;
@@ -127,6 +131,7 @@ module controller #(
         jump           = 1'b0                   ;
         sel_src_pcplusimm = 1'b0                ;
         en_pcplusimm   = 1'b0                   ;   //0 for unable
+        CSR_en         = 1'b0                   ;
         if(fun3 == 3'b000)   begin
           memaccess_type = `MEMACCESSBYTE       ;
           memaccess_sign = `MEMACCESSSIGN       ;
@@ -154,6 +159,7 @@ module controller #(
         en_pcplusimm   = 1'b1                   ;   //1 for enable
         memaccess_type = `MEMACCESSWORD         ;  //dont'care
         memaccess_sign = `MEMACCESSSIGN         ;
+        CSR_en         = 1'b0                   ;
       end
       `UTYPE: begin
         rf_read        = 1'b0                   ;
@@ -168,6 +174,7 @@ module controller #(
         en_pcplusimm   = 1'b0                   ;   //0 for unable
         memaccess_type = `MEMACCESSWORD         ;  //dont'care
         memaccess_sign = `MEMACCESSSIGN         ;
+        CSR_en         = 1'b0                   ;
       end
       `UTYPE_N: begin
         rf_read        = 1'b0                   ;
@@ -182,6 +189,7 @@ module controller #(
         en_pcplusimm   = 1'b1                   ;   //1 for unable
         memaccess_type = `MEMACCESSWORD         ;  //dont'care
         memaccess_sign = `MEMACCESSSIGN         ;
+        CSR_en         = 1'b0                   ;
       end
       `JTYPE: begin
         rf_read        = 1'b0                   ;
@@ -196,6 +204,22 @@ module controller #(
         en_pcplusimm   = 1'b1                   ;   //0 for unable
         memaccess_type = `MEMACCESSWORD         ;  //dont'care
         memaccess_sign = `MEMACCESSSIGN         ;
+        CSR_en         = 1'b0                   ;
+      end
+       `SYSTEM: begin
+        rf_read        = 1'b1                   ;
+        rf_write       = 1'b1                   ;
+        alu_src_sel    = 1'b0                   ;   //0 for reg
+        reg_write_sel  = `WBFROMCSR             ;   //0 for alu
+        DM_write       = 1'b0                   ;
+        DM_en          = 1'b0                   ;
+        branch         = 1'b0                   ;
+        jump           = 1'b0                   ;
+        sel_src_pcplusimm = 1'b0                ;
+        en_pcplusimm   = 1'b0                   ;   //0 for unable
+        memaccess_type = `MEMACCESSWORD         ;  //dont'care
+        memaccess_sign = `MEMACCESSSIGN         ;
+        CSR_en         = 1'b1                   ;
       end
       default: begin
         rf_read        = 1'b0                   ;
@@ -210,6 +234,7 @@ module controller #(
         en_pcplusimm   = 1'b0                   ;   //0 for unable
         memaccess_type = `MEMACCESSWORD         ;  //dont'care
         memaccess_sign = `MEMACCESSSIGN         ;
+        CSR_en         = 1'b0                   ;
       end
     endcase
   end : control_signal_assign

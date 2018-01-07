@@ -25,6 +25,8 @@
 `define UTYPE   7'b0110111
 `define UTYPE_N 7'b0010111
 `define JTYPE   7'b1101111   
+`define SYSTEM   7'b1110011   
+
 
 //addressing
 `define RS2 24:20
@@ -81,7 +83,7 @@
 `define WBFROMIMM    3'b010
 `define WBFROMPC     3'b011
 `define WBFROMPCIMM  3'b100
-
+`define WBFROMCSR   3'b101
 //cut set control
 
 // `define CUTSETPUSH  2'b00
@@ -129,4 +131,31 @@
 
 `define DRAMROW 22:12
 `define DRAMCOL 11:2
+// csr instruction mode
+//`define CSRRRW_F3 3'b001
+//`define CSRRRS_F3 3'b010
+//`define CSRRRC_F3 3'b011
+//`define CSRRRWI_F3 3'b101
+//`define CSRRRSI_F3 3'b110
+//`define CSRRRCI_F3 3'b111
+//`define CSR000_F3 3'b000
+//`define MRET_F7 7'b0011000
+//`define WFI_F7  7'b0001000
+
+// the address of csr reg
+//`define MSTATUSADDR 12'h300
+//`define MIEADDR     12'h304
+//`define MTVECADDR   12'h305
+//`define MEPCADDR    12'h341
+//`define MIPADDR     12'h344
+//`define MCYCLEADDR     12'hB00
+//`define MINSTRETADDR     12'hB02
+//`define MCYCLEHADDR      12'hB80
+//`define MINSTRETHADDR    12'hB82
+//
+`define REGWIDTH 32
+
+//DRAM ADDR field
+
+
 `endif

@@ -1,0 +1,7 @@
+INCA_*
+*.log
+top.fsdb.*
+ncverilog*
+novas*
+verdi*
+*.fsdb

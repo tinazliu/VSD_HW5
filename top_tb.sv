@@ -212,11 +212,11 @@ module top_tb;
     `ifdef prog0
       for (int i=0;i<16;i=i+1 ) begin 
         if (DM1.mem_data[i]!==GOLDEN[i]) begin
-          $display("DM[%2d]=%d, expect=%d",i,DM1.mem_data[i],GOLDEN[i]); 
+          $display("DM[%2d]=%h, expect=%h",i,DM1.mem_data[i],GOLDEN[i]); 
           err=err+1;
         end
         else begin
-          $display("DM[%2d]=%d, pass",i,DM1.mem_data[i]);
+          $display("DM[%2d]=%h, pass",i,DM1.mem_data[i]);
         end
       end
       cycle_cnt = {DM1.mem_data[17], DM1.mem_data[16]};
