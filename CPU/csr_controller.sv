@@ -23,7 +23,7 @@ module csr_controller #(
   output logic csr_en_sig,
   output logic csr_write,
   output logic csr_read,
-  output logic csr_WRET,
+  output logic csr_MRET,
   output logic csr_WFI,
   output logic csr_imm_mode,
   output logic [2:0]csr_WSC_mode,
@@ -42,14 +42,16 @@ module csr_controller #(
 //`define CSR000_F3 3'b000
 //`define MRET_F7 7'b0011000
 //`define WFI_F7  7'b0001000
-  enum logic [3:0]{MRET_F7,WFI_F7,CSRRRW_F3,CSRRRS_F3,CSRRRC_F3,CSRRRWI_F3,CSRRRSI_F3,CSRRRCI_F3} mark;
+  enum logic [3:0]{NOMASK,MRET_F7,WFI_F7,CSRRRW_F3,CSRRRS_F3,CSRRRC_F3,CSRRRWI_F3,CSRRRSI_F3,CSRRRCI_F3} mark;
   always_comb begin : mark_mapping
     case (fun3)
       3'b000:begin
         if(fun7 == 7'b0011000)
           mark = MRET_F7;
-        else
+        else if(fun7 == 7'b0001000)
           mark = WFI_F7;
+        else
+          mark = NOMASK;
       end
 
       3'b001:begin
@@ -83,57 +85,82 @@ module csr_controller #(
   always_comb begin: csr_controller 
     csr_en_sig = CSR_en;
     csr_read = (CSR_en) ? 1'b1 : 1'b0 ;
-    csr_write = (CSR_en) ? 1'b1 : 1'b0 ;
-    case(mark)
-      MRET_F7:begin
-        csr_imm_mode = 1'b0 ;
-        csr_WSC_mode = 3'd0;
-        csr_WRET = 1'b1;
-        csr_WFI =  1'b0;
+    //csr_write = (CSR_en & !csr_MRET) ? 1'b1 : 1'b0 ;
+    if(CSR_en) begin
+      case(mark)
+        MRET_F7:begin
+          csr_imm_mode = 1'b0 ;
+          csr_WSC_mode = 3'd0;
+          csr_MRET = 1'b1;
+          csr_WFI =  1'b0;
+          csr_write = 1'b0;
+        end
+        WFI_F7:begin
+          csr_imm_mode = 1'b0 ;
+          csr_WSC_mode = 3'd0;
+          csr_MRET = 1'b0;
+          csr_WFI =  1'b1;
+          csr_write = 1'b0;
+        end
+        CSRRRW_F3:begin
+          csr_imm_mode = 1'b0 ;
+          csr_WSC_mode = 3'd1;
+          csr_MRET = 1'b0;
+          csr_WFI = 1'b0;
+          csr_write = 1'b1;
+        end
+         CSRRRS_F3:begin
+          csr_imm_mode = 1'b0 ;
+          csr_WSC_mode = 3'd2;
+          csr_MRET = 1'b0;
+          csr_WFI = 1'b0;
+          csr_write = 1'b1;
+        end
+         CSRRRC_F3:begin
+          csr_imm_mode = 1'b0 ;
+          csr_WSC_mode = 3'd3;
+          csr_MRET = 1'b0;
+          csr_WFI = 1'b0;
+          csr_write = 1'b1;
+        end
+         CSRRRWI_F3:begin
+          csr_imm_mode = 1'b1 ;
+          csr_WSC_mode = 3'd1;
+          csr_MRET = 1'b0;
+          csr_WFI = 1'b0;
+          csr_write = 1'b1;
+        end
+         CSRRRSI_F3:begin
+          csr_imm_mode = 1'b1 ;
+          csr_WSC_mode = 3'd2;
+          csr_MRET = 1'b0;
+          csr_WFI = 1'b0;
+          csr_write = 1'b1;
+        end
+         CSRRRCI_F3:begin
+          csr_imm_mode = 1'b1 ;
+          csr_WSC_mode = 3'd3;
+          csr_MRET = 1'b0;
+          csr_WFI = 1'b0;
+          csr_write = 1'b1;
+        end
+        default: begin
+          csr_imm_mode = 1'b0 ;
+          csr_WSC_mode = 3'd0;
+          csr_MRET = 1'b0;
+          csr_WFI = 1'b0;
+          csr_write = 1'b0;
+        end
+        endcase
       end
-      WFI_F7:begin
-        csr_imm_mode = 1'b0 ;
-        csr_WSC_mode = 3'd0;
-        csr_WRET = 1'b0;
-        csr_WFI =  1'b1;
+      else begin
+          csr_imm_mode = 1'b0 ;
+          csr_WSC_mode = 3'd0;
+          csr_MRET = 1'b0;
+          csr_WFI = 1'b0;
+          csr_write = 1'b0;
+ 
       end
-      CSRRRW_F3:begin
-        csr_imm_mode = 1'b0 ;
-        csr_WSC_mode = 3'd1;
-        csr_WRET = 1'b0;
-        csr_WFI = 1'b0;
-      end
-       CSRRRS_F3:begin
-        csr_imm_mode = 1'b0 ;
-        csr_WSC_mode = 3'd2;
-        csr_WRET = 1'b0;
-        csr_WFI = 1'b0;
-      end
-       CSRRRC_F3:begin
-        csr_imm_mode = 1'b0 ;
-        csr_WSC_mode = 3'd3;
-        csr_WRET = 1'b0;
-        csr_WFI = 1'b0;
-      end
-       CSRRRWI_F3:begin
-        csr_imm_mode = 1'b1 ;
-        csr_WSC_mode = 3'd1;
-        csr_WRET = 1'b0;
-        csr_WFI = 1'b0;
-      end
-       CSRRRSI_F3:begin
-        csr_imm_mode = 1'b1 ;
-        csr_WSC_mode = 3'd2;
-        csr_WRET = 1'b0;
-        csr_WFI = 1'b0;
-      end
-       CSRRRCI_F3:begin
-        csr_imm_mode = 1'b1 ;
-        csr_WSC_mode = 3'd3;
-        csr_WRET = 1'b0;
-        csr_WFI = 1'b0;
-      end
-      endcase
 
   end
 

@@ -86,7 +86,28 @@ module core #(
   logic [REGWIDTH - 1 : 0] forward_src_MEM;
   logic [FORWARDSELWIDTH - 1 : 0] sel_forwardA, sel_forwardB;
   logic [FORWARDSELWIDTH - 1 : 0] sel_forwardA_ID, sel_forwardB_ID;
-  
+   //>>>>>> csr >>>>>>>
+  logic csr_en_sig_ID;
+  logic csr_write_ID;
+  logic csr_read_ID;
+  logic csr_MRET_ID;
+  logic int_enable;
+  logic csr_WFI_ID;
+  logic csr_imm_mode_ID;
+  logic [2:0]csr_WSC_mode_ID;
+ 
+  logic csr_en_sig_EX;
+  logic csr_write_EX;
+  logic csr_read_EX;
+  logic csr_MRET_EX;
+  logic csr_WFI_EX, csr_WFI_EX_pre;
+  logic csr_imm_mode_EX;
+  logic [2:0]csr_WSC_mode_EX;
+  logic [IMM12WIDTH - 1 : 0] csr_addr_EX; // = imm12
+  logic [REGWIDTH - 1 : 0] csr_datain;
+  logic [REGWIDTH - 1 : 0] csr_out_EX;
+
+ 
   //data hazard 
   enum logic [1:0] {HAZARDSELEMP, HAZARDSELNORMAL} hazard_nop_sel;
 
@@ -102,6 +123,13 @@ module core #(
     end
     else if (stall == 1'b1) begin
       cutset_sel_IFID  = `CUTSETSTALL;
+      cutset_sel_IDEX  = `CUTSETSTALL;
+      cutset_sel_EXMEM = `CUTSETSTALL;
+      cutset_sel_MEMWB = `CUTSETSTALL;
+      pc_stall         = 1'b1;
+    end
+    else if (csr_WFI_EX &  !sensor1_interupt) begin
+      cutset_sel_IFID  = `CUTSETFLUSH;
       cutset_sel_IDEX  = `CUTSETSTALL;
       cutset_sel_EXMEM = `CUTSETSTALL;
       cutset_sel_MEMWB = `CUTSETSTALL;
@@ -137,9 +165,11 @@ module core #(
   
   logic [PCWIDTH - 1 : 0] current_pc, next_pc, pc4_IF;
   logic [PCWIDTH - 1 : 0] csr_PC_out;
+  logic [PCWIDTH - 1 : 0] non_int_pc;
   //>>>>>>> csr >>>>>>> 
-  assign pc4_IF = (sensor1_interupt)? csr_PC_out : current_pc + 4;
-  assign next_pc = (pc_sel)? pcplusimm:pc4_IF;
+  assign pc4_IF = current_pc + 4;
+  assign non_int_pc = (pc_sel)? pcplusimm:pc4_IF;
+  assign next_pc = (int_enable | csr_MRET_EX)? csr_PC_out: non_int_pc;
 
   //IF instance
 
@@ -192,20 +222,12 @@ module core #(
   
 
   logic [REGWIDTH - 1 : 0] IM_out_buf;
-  //>>>>>>> csr >>>>>>>
-  logic csr_en_sig_ID;
-  logic csr_write_ID;
-  logic csr_read_ID;
-  logic csr_MRET_ID;
-  logic csr_WFI_ID;
-  logic csr_imm_mode_ID;
-  logic [2:0]csr_WSC_mode_ID;
- 
+
   always_ff @(posedge clk) begin :cutset_IFID
     case (cutset_sel_IFID)
       `CUTSETFLUSH: begin
         pc4_ID <= {(PCWIDTH){1'b0}};
-        IM_out_buf        <= {(REGWIDTH){1'b0}}    ;
+        IM_out_buf        <= {32'h13}    ;
       end
       `CUTSETSTALL: begin
         pc4_ID <= pc4_ID;
@@ -354,7 +376,7 @@ module core #(
     .csr_en_sig(csr_en_sig_ID),
     .csr_write(csr_write_ID),
     .csr_read(csr_read_ID),
-    .csr_WRET(csr_WRET_ID),
+    .csr_MRET(csr_MRET_ID),
     .csr_WFI(csr_WFI_ID),
     .csr_imm_mode(csr_imm_mode_ID),
     .csr_WSC_mode(csr_WSC_mode_ID),
@@ -380,18 +402,6 @@ module core #(
   logic [WBSELWIDTH - 1 : 0] reg_write_sel_EX;
   logic [ALUOPWIDTH - 1 : 0] aluop_EX;
   logic [WORDTYPEWIDTH - 1 : 0] memaccess_type_EX;
-
-  //>>>>>> csr >>>>>>>
-  logic csr_en_sig_EX;
-  logic csr_write_EX;
-  logic csr_read_EX;
-  logic csr_MRET_EX;
-  logic csr_WFI_EX;
-  logic csr_imm_mode_EX;
-  logic [2:0]csr_WSC_mode_EX;
-  logic [IMM12WIDTH - 1 : 0] csr_addr_EX; // = imm12
-  logic [REGWIDTH - 1 : 0] csr_datain;
-  logic [REGWIDTH - 1 : 0] csr_out_EX;
 
   //////////////// 
  
@@ -545,6 +555,7 @@ module core #(
   csr_reg csr_reg1(
    .csr_out(csr_out_EX),
    .PC_out(csr_PC_out), //<<<<<<<<<<
+   .int_enable(int_enable),
    .csr_datain(csr_datain),
    .csr_raddr(csr_addr_EX),
    .csr_waddr(csr_addr_EX),
@@ -553,12 +564,15 @@ module core #(
    .csr_read(csr_read_EX),
    .csr_MRET(csr_MRET_EX),
    .csr_WFI(csr_WFI_EX),
+   .csr_WFI_pre(csr_WFI_EX_pre),
    .sensor_int(sensor1_interupt), // sensor has the request for interrupt
    .pc_stall(pc_stall), 
    .csr_stall((cutset_sel_EXMEM == `CUTSETSTALL)), 
    .clk(clk),
    .rst(rst),
-   .current_PC(current_pc) //<<<<<<<<<<<
+   .next_pc(non_int_pc) ,//<<<<<<<<<<<
+   .pc4_ID(pc4_ID) //<<<<<<<<<<<
+   
 
 );
 
@@ -582,6 +596,7 @@ module core #(
   always_ff @(posedge clk) begin :cutset_EXMEM
     case (cutset_sel_EXMEM)
       `CUTSETFLUSH: begin
+        csr_WFI_EX_pre    <= 'd0;
         DM_write_MEM       <= 1'b0 ;
         DM_en_MEM          <= 1'b0 ;
         reg_write_sel_MEM  <= 2'b00;
@@ -598,6 +613,7 @@ module core #(
         csr_out_MEM        <= 'd0;
       end
       `CUTSETSTALL: begin
+        csr_WFI_EX_pre    <= csr_WFI_EX_pre;
         DM_write_MEM      <= DM_write_MEM      ;
         DM_en_MEM         <= DM_en_MEM         ;
         reg_write_sel_MEM <= reg_write_sel_MEM ;
@@ -614,6 +630,7 @@ module core #(
         csr_out_MEM        <= csr_out_MEM;
       end
       default: begin
+        csr_WFI_EX_pre    <= csr_WFI_EX;
         DM_write_MEM      <= DM_write_EX       ;
         DM_en_MEM         <= DM_en_EX          ;
         reg_write_sel_MEM <= reg_write_sel_EX  ;

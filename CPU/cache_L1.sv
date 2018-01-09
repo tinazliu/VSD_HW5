@@ -57,6 +57,7 @@ module cache_L1 #(
   input [DATAWIDTH - 1 : 0] SYSdata_in,
 
   input stall,
+  logic flush,
   input clk,
   input rst,
   //
@@ -105,6 +106,7 @@ module cache_L1 #(
     .valid_data(valid_data),
     .clk(clk),
     .rst(rst),
+    .flush(flush),
     .datain_valid(datain_valid),
     .web_valid(web_valid),
     .oe_valid(oe_valid),

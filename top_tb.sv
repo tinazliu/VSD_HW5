@@ -233,11 +233,11 @@ module top_tb;
       $display("=============================================");
       for (int i=0;i<320;i=i+1 ) begin 
         if ((DM1.mem_data[i] !== GOLDEN[i]) && ((i>10) || (i<7))) begin
-          $display("DM[%2d]=%d, expect=%d",i,DM1.mem_data[i],GOLDEN[i]); 
+          $display("DM[%2d]=%h, expect=%h",i,DM1.mem_data[i],GOLDEN[i]); 
           err=err+1;
         end
         else begin
-          $display("DM[%2d]=%d, pass",i,DM1.mem_data[i]);
+          $display("DM[%2d]=%h, pass",i,DM1.mem_data[i]);
         end
       end
       cycle_cnt = {DM1.mem_data[8], DM1.mem_data[7]};

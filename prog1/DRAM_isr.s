@@ -19,7 +19,7 @@ main:
   slli t3,t3,2
   add t3,t3,t2      # copy_dest of next round
 copy_sc:
-  lw t0,0(t1)       # Load SC[copy_src]
+  lw t0,0()       # Load SC[copy_src]
   addi t1,t1,4
   sw t0,0(t2)       # Store to DM[copy_dest]
   addi t2,t2,4

@@ -1,78 +1,78 @@
-20040137  
-FFC10113  
-30046073  
-000012B7  
-80028293  
-3042A073  
-200002B7  
-0002A023  
-0002A223  
-00400313  
-0062A423  
-10028313  
-0062A623  
-0062A823  
-04000313  
-0062AA23  
-30000337  
-10030313  
-00100393  
-00732023  
-00000317  
-FB030313  
-0062AC23  
-10500073  
-FF810113  
-00012023  
-00012303  
-0142A383  
-06730263  
-00130E13  
-01C12223  
-00412383  
-0142A303  
-04638063  
-00239393  
-0102AE03  
-01C383B3  
-0003AF03  
-00012303  
-00231313  
-01C30333  
-00032E83  
-01DF5663  
-01D3A023  
-01E32023  
-00412383  
-00138393  
-00712223  
-FBDFF06F  
-00012303  
-00130313  
-00612023  
-F99FF06F  
-00810113  
-0002A303  
-00130313  
-0062A023  
-0082AE03  
-03C30263  
-0102A383  
-0142AE03  
-002E1E13  
-007E0E33  
-01C2A823  
-0042A383  
-F4730CE3  
-F59FF06F  
-B0002373  
-B02023F3  
-B8002E73  
-B8202EF3  
-0062AE23  
-03C2A023  
-0272A223  
-03D2A423  
-FFFFF337  
-00612023  
-10500073  
+20040137  //           li sp,0x2003fffc  # Reserve DM[65535] for stop flag   
+FFC10113  //           li sp,0x2003fffc  # Reserve DM[65535] for stop flag   
+30046073  //           csrsi mstatus,0x8 # Enable global interrupt           
+000012B7  //           li t0,0x800                                           
+80028293  //           li t0,0x800                                           
+3042A073  //           csrs mie,t0       # Enable local interrupt            
+200002B7  //           li t0,0x20000000  # DM start address                  
+0002A023  //           sw zero,0(t0)     # DM[0]: sort_cnt = 0               
+0002A223  //           sw zero,4(t0)     # DM[1]: copy_cnt = 0               
+00400313  //           li t1,0x4                                             
+0062A423  //           sw t1,8(t0)       # DM[2]: total_cnt = 4              
+10028313  //           addi t1,t0,0x100                                      
+0062A623  //           sw t1,12(t0)      # DM[3]: copy_dest = DM[64]         
+0062A823  //           sw t1,16(t0)      # DM[4]: sort_base = DM[64]         
+04000313  //           li t1,0x40                                            
+0062AA23  //           sw t1,20(t0)      # DM[5]: data_num = 64              
+30000337  //           li t1,0x30000100  # sctrl_en                          
+10030313  //           li t1,0x30000100  # sctrl_en                          
+00100393  //           li t2,0x1         # Enable sensor controller          
+00732023  //           sw t2,0(t1)                                           
+00000317  //           auipc t1,0                                            
+FB030313  //           addi t1,t1,-80    # Check main program start PC       
+0062AC23  //           sw t1,24(t0)      # DM[6]: Checking PC => 0x1000_1000 
+10500073  //waiting:   wfi               # Wait for first interrupt          
+FF810113  //sort_setup:addi sp,sp,-8                                         
+00012023  //           sw zero,0(sp)     # iter1 = 0                         
+00012303  //loop1:     lw t1,0(sp)       # iter1                             
+0142A383  //           lw t2,20(t0)      # data_num                          
+06730263  //           beq t1,t2,sort_end                                    
+00130E13  //           addi t3,t1,1                                          
+01C12223  //           sw t3,4(sp)       # iter2 = iter1 + 1                 
+00412383  //loop2:     lw t2,4(sp)       # iter2                             
+0142A303  //           lw t1,20(t0)      # data_num                          
+04638063  //           beq t2,t1,loop1_incr                                  
+00239393  //           slli t2,t2,2                                          
+0102AE03  //           lw t3,16(t0)      # sort_base                         
+01C383B3  //           add t2,t2,t3                                          
+0003AF03  //           lw t5,0(t2)       # array[iter2]                      
+00012303  //           lw t1,0(sp)       # iter1                             
+00231313  //           slli t1,t1,2                                          
+01C30333  //           add t1,t1,t3                                          
+00032E83  //           lw t4,0(t1)       # array[iter1]                      
+01DF5663  //           ble t4,t5,loop2_incr                                  
+01D3A023  //           sw t4,0(t2)                                           
+01E32023  //           sw t5,0(t1)       # array[iter1] <=> array[iter2]     
+00412383  //loop2_incr:lw t2,4(sp)       # iter2                             
+00138393  //           addi t2,t2,1                                          
+00712223  //           sw t2,4(sp)                                           
+FBDFF06F  //           j loop2                                               
+00012303  //loop1_incr:lw t1,0(sp)       # iter1                             
+00130313  //           addi t1,t1,1                                          
+00612023  //           sw t1,0(sp)                                           
+F99FF06F  //           j loop1                                               
+00810113  //sort_end:  addi sp,sp,8                                          
+0002A303  //           lw t1,0(t0)       # sort_cnt                          
+00130313  //           addi t1,t1,1                                          
+0062A023  //           sw t1,0(t0)       # Increase sort count               
+0082AE03  //           lw t3,8(t0)       # total_cnt                         
+03C30263  //           beq t1,t3,main_end                                    
+0102A383  //           lw t2,16(t0)      # DM[4]: sort_base                  
+0142AE03  //           lw t3,20(t0)      # DM[5]: data_num                   
+002E1E13  //           slli t3,t3,2                                          
+007E0E33  //           add t3,t3,t2                                          
+01C2A823  //           sw t3,16(t0)      # sort_base of next round           
+0042A383  //           lw t2,4(t0)       # copy_cnt                          
+F4730CE3  //           beq t1,t2,waiting                                     
+F59FF06F  //           j sort_setup                                          
+B0002373  //main_end:  csrr t1,mcycle                                        
+B02023F3  //           csrr t2,minstret                                      
+B8002E73  //           csrr t3,mcycleh                                       
+B8202EF3  //           csrr t4,minstreth                                     
+0062AE23  //           sw t1,28(t0)      # DM[7] = mcycle                    
+03C2A023  //           sw t3,32(t0)      # DM[8] = mcycleh                   
+0272A223  //           sw t2,36(t0)      # DM[9] = minstret                  
+03D2A423  //           sw t4,40(t0)      # DM[10] = minstreth                
+FFFFF337  //           li t1,0xfffff000                                      
+00612023  //           sw t1,0(sp)       # Enable stop flag                  
+10500073  //           wfi               # Barrier                           

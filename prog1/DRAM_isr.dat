@@ -1,36 +1,38 @@
-FF010113
-00512023
-00612223
-00712423
-01C12623
-200002B7
-30000337
-00C2A383
-0142AE03
-002E1E13
-007E0E33
-00032283
-00430313
-0053A023
-00438393
-FFC398E3
-200002B7
-0072A623
-30000337
-20030313
-00100E13
-01C32023
-00032023
-0042A303
-00130313
-0062A223
-0082A383
-00731663
-08000393
-3003B073
-00012283
-00412303
-00812383
-00C12E03
-01010113
-30200073
+FF010113  //  addi sp,sp,-16    # Push t0-t3 to stack
+00512023  //  sw t0,0(sp)
+00612223  //  sw t1,4(sp)
+00712423  //  sw t2,8(sp)
+01C12623  //  sw t3,12(sp)
+200002B7  //  li t0,0x20000000  # DM start address
+30000337  //  li t1,0x30000000  # SC[0]: copy_src
+00C2A383  //  lw t2,12(t0)      # DM[3]: copy_dest
+0142AE03  //  lw t3,20(t0)      # DM[5]: data_num
+002E1E13  //  slli t3,t3,2
+007E0E33  //  add t3,t3,t2      # copy_dest of next round
+00032283  //copy_sc://  lw t0,0()       # Load SC[copy_src]
+00430313  //  addi t1,t1,4
+0053A023  //  sw t0,0(t2)       # Store to DM[copy_dest]
+00438393  //  addi t2,t2,4
+FFC398E3  //  bne t2,t3,copy_sc
+200002B7  //copy_sc_done://  li t0,0x20000000
+0072A623  //  sw t2,12(t0)      # Update DM[3] (copy_dest)
+30000337  //  li t1,0x30000200
+20030313  //  li t3,0x1
+00100E13  //  sw t3,0(t1)       # Enable sctrl_clear
+01C32023  //  sw zero,0(t1)     # Disable sctrl_clear
+00032023  //  lw t1,4(t0)       # DM[1]: copy_cnt
+0042A303  //  addi t1,t1,1
+00130313  //  sw t1,4(t0)       # Increase copy count
+0062A223  //  lw t2,8(t0)       # DM[2]: total_cnt
+0082A383  //  bne t1,t2,isr_done
+00731663  //  li t2,0x80
+08000393  
+3003B073  //isr_done://  csrc mstatus,t2   # Disable MPIE of mstatus
+00012283  //  lw t0,0(sp)
+00412303  //  lw t1,4(sp) 
+00812383  //  lw t2,8(sp) 
+00C12E03  //  lw t3,12(sp) 
+01010113  //  addi sp,sp,16
+30200073  //  mret
+          
+          

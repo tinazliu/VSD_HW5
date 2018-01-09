@@ -24,6 +24,7 @@ module  valid_array #(
   input cs_valid,
   input oe_valid,
   input [INDEXWIDTH - 1 : 0] addr_index,
+  input flush,
   input clk,
   input rst
 );
@@ -36,7 +37,7 @@ module  valid_array #(
   end : read
 
   always_ff @(posedge clk) begin : write
-    if(rst) begin
+    if(rst | flush) begin
       vdata = 'b0;
     end
     else begin

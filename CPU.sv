@@ -149,6 +149,13 @@ module CPU (
     .stall(stall)
   );
 
+  logic last_sensor1_interrupt;
+  always_ff @(posedge HCLK) begin : flush_dcache_interrupt
+    if(rst) last_sensor1_interrupt <= 'b0;
+    else last_sensor1_interrupt <= sctrl_interrupt;
+  end : flush_dcache_interrupt
+
+  
   cache_L1 dcache(
     .Pready(M2_ready_w1),
     .Pdata_out(DM_out_w1),
@@ -164,6 +171,7 @@ module CPU (
     .SYSready(M2_ready_w2),
     .SYSdata_in(DM_out_w2),
     .stall(stall),
+    .flush((last_sensor1_interrupt == 'b0 && sctrl_interrupt== 'b1)),
     .clk(clk),
     .rst(rst),
     .L1_access(L1D_access),

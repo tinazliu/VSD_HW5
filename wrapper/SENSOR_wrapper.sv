@@ -48,12 +48,20 @@ module  SENSOR_wrapper #(
   
   logic w_ready, r_ready, c_ready, clear_check;
   logic [`AHB_ADDR_BITS - 1 : 0] addr_buf;
-  always_ff @(posedge HCLK) begin : clear_buf
+  //always_ff @(posedge HCLK) begin : clear_buf
+    //if (~HRESETn) sctrl_clear <= 1'b1;
+    //else if (clear_check && (HWDATA != 'd0)) sctrl_clear <= 1'b1;
+    //else if (clear_check && (HWDATA == 'd0)) sctrl_clear <= 1'b0;
+    //else sctrl_clear <= 1'b0;
+  //end : clear_buf
+  always_comb begin : clear_buf
     if (~HRESETn) sctrl_clear = 1'b1;
-    else if (clear_check && (HWDATA != 'b0)) sctrl_clear = 1'b1;
-    else if (clear_check && (HWDATA == 'b0)) sctrl_clear = 1'b0;
+    else if (clear_check && (HWDATA != 'd0)) sctrl_clear = 1'b1;
+    else if (clear_check && (HWDATA == 'd0)) sctrl_clear = 1'b0;
     else sctrl_clear = 1'b0;
   end : clear_buf
+  logic temp_clear;
+  assign temp_clear =clear_check && (HWDATA != 'd0);
 
   always_ff @(posedge HCLK) begin : buf_
     if (~HRESETn) clear_check = 1'b0;
@@ -63,7 +71,7 @@ module  SENSOR_wrapper #(
 
   always_ff @(posedge HCLK) begin : addr_buf_
     if (~HRESETn) addr_buf = 'b0;
-    else if(HSEL_SENSOR&&(r_cs==IDLE)) addr_buf = HADDR[5:0];
+    else if(HSEL_SENSOR&&(r_cs==IDLE || r_cs == READDONE)) addr_buf = HADDR[7:2];
     else addr_buf = addr_buf;
   end : addr_buf_
 
@@ -82,8 +90,9 @@ module  SENSOR_wrapper #(
     case (r_cs)
       IDLE: if(HSEL_SENSOR&& ~HWRITE) r_ns = READDONE;
             else r_ns = IDLE;
-      READDONE:  r_ns = IDLE;
-      default:   r_ns = IDLE;
+      READDONE: if(HSEL_SENSOR&& ~HWRITE) r_ns = READDONE; 
+                else r_ns = IDLE;                          
+      default:  r_ns = IDLE;
     endcase
   end : r_next_state
 
@@ -93,7 +102,7 @@ module  SENSOR_wrapper #(
              else w_ns = CLOSE;
       OPENCHECK: if(HWDATA != 'b0) w_ns = OPEN;
                  else w_ns = CLOSE;
-      OPEN:  if(HSEL_SENSOR && HWRITE&& (HADDR == 'h3000_0200)) w_ns = CLOSECHECK;
+      OPEN:  if(HSEL_SENSOR && HWRITE&& (HADDR == 'h3000_0300)) w_ns = CLOSECHECK;
              else w_ns = OPEN;
       CLOSECHECK: if(HWDATA != 'b0) w_ns = CLOSE;
                   else w_ns = OPEN;
@@ -101,15 +110,38 @@ module  SENSOR_wrapper #(
     endcase
   end : w_next_state
 
+  enum logic [1:0] {WREADY, ENREADY, RREADY} sel_ready;
+  always_ff @(posedge HCLK) begin : sel_ready_
+    if(HSEL_SENSOR) begin
+      if ( HADDR == 'h3000_0200) begin
+        sel_ready = ENREADY;
+      end
+      else if (HWRITE &&(HADDR == 'h3000_0100)) begin
+        sel_ready = WREADY;
+      end
+      else if (~HWRITE ) begin
+        sel_ready = RREADY;
+      end
+      else begin
+        sel_ready = RREADY;
+      end
+
+    end
+    else begin
+      sel_ready = RREADY; 
+    end
+  end : sel_ready_
   always_comb begin : fix
-    HREADY = w_ready | r_ready | clear_check;
+    HREADY = (sel_ready == RREADY)? r_ready:
+             (sel_ready == WREADY)? w_ready:
+             (sel_ready == ENREADY)? clear_check: r_ready;
     HRESP = 'b0;
   end : fix
 
   always_comb begin : r_out
     case (r_cs)
       IDLE: begin
-        r_ready = ~HSEL_SENSOR;
+        r_ready =  'b0;
         sctrl_addr = 'b0;
         HRDATA     = 'b0;
       end
@@ -129,7 +161,7 @@ module  SENSOR_wrapper #(
   always_comb begin : w_out
     case (w_cs)
       CLOSE: begin
-        w_ready = ~HSEL_SENSOR;
+        w_ready = 1'b1;
         sctrl_en = 1'b0;
       end
       OPENCHECK: begin
@@ -137,15 +169,15 @@ module  SENSOR_wrapper #(
         sctrl_en = 1'b0;
       end
       OPEN: begin
-        w_ready = ~HSEL_SENSOR;
-        sctrl_en = 1'b0;
+        w_ready = 1'b1;
+        sctrl_en = 1'b1;
       end
       CLOSECHECK: begin
         w_ready = 1'b1;
-        sctrl_en = 1'b0;
+        sctrl_en = 1'b1;
       end
       default: begin
-        w_ready = ~HSEL_SENSOR;
+        w_ready = 1'b1;
         sctrl_en = 1'b0;
       end
     endcase
